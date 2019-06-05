@@ -1,4 +1,3 @@
-
 export const ADD: string = "ADD";
 export const AMBIENTLIGHT: string = "ambientlight";
 export const ANALOG: string = "analog";
@@ -59,7 +58,7 @@ export const DRIVE_DIRECTION: string = "driveDirection";
 export const DURATION: string = "duration";
 export const EACH_COUNTER: string = "eachcounter";
 export const ELSE_STMTS: string = "elseStmts";
-export const ENC: number = 360.0 / ( 3.0 * Math.PI * 5.6 );
+export const ENC: number = 360.0 / (3.0 * Math.PI * 5.6);
 export const ENCODER_SENSOR_RESET: string = "encoderSensorReset";
 export const ENCODER_SENSOR_SAMPLE: string = "encoderSensorSample";
 export const ENTER: string = "enter";
@@ -250,7 +249,7 @@ export const TRACKWIDTH: number = 40;
 export const TURN_ACTION: string = "TurnAction";
 export const TURN_DIRECTION: string = "turnDirection";
 export const TURN_LIGHT: string = "turnLight";
-export const TURN_RATIO: number = ( 40 / 3. ) / 2.8;
+export const TURN_RATIO: number = (40 / 3.) / 2.8;
 export const TYPE: string = "type";
 export const ULTRASONIC: string = "ultrasonic";
 export const UNARY: string = "Unary";

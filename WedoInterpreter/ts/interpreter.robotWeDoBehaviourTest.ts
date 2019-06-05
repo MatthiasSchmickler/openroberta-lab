@@ -1,12 +1,13 @@
-import { Native } from "interpreter.nativeInterface";
+import { ARobotBehaviour } from "interpreter.aRobotBehaviour";
 import { State } from "interpreter.state";
 import * as C from "interpreter.constants";
 import * as U from "interpreter.util";
 
-export class NativeTest implements Native {
+export class RobotWeDoBehaviourTest extends ARobotBehaviour {
     private timers;
 
     constructor( opLog, debug ) {
+        super();
         this.timers = {};
         this.timers['start'] = Date.now();
 

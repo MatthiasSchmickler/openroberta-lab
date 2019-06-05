@@ -1,4 +1,4 @@
-import { Native } from "interpreter.nativeInterface";
+import { ARobotBehaviour } from "interpreter.aRobotBehaviour";
 import { State } from "interpreter.state";
 import * as C from "interpreter.constants";
 import * as U from "interpreter.util";
@@ -8,31 +8,36 @@ export class Interpreter {
     private terminated = false;
     private callbackOnTermination = undefined;
 
-    private n: Native; // implementation of the NativeInterface to connect a real WeDo robot (or a test instance) to the interpreter
+    private r: ARobotBehaviour;
     private s: State; // the state of the interpreter (ops, pc, bindings, stack, ...)
 
-    constructor() {
-    }
-
-    /**
-     * run the operations.
+    /*
      * 
      * . @param generatedCode argument contains the operations and the function definitions
-     * . @param native implementation of the native interface Native to connect a real WeDo robot (or a test instance) to the interpreter
+     * . @param r implementation of the ARobotBehaviour class
      * . @param cbOnTermination is called when the program has terminated
-     */
-    public run( generatedCode: any, native: Native, cbOnTermination: () => void ) {
+    */
+    constructor( generatedCode: any, r: ARobotBehaviour, cbOnTermination: () => void ) {
         this.terminated = false;
         this.callbackOnTermination = cbOnTermination;
         const stmts = generatedCode[C.OPS];
         const functions = generatedCode[C.FUNCTION_DECLARATION];
-        this.n = native;
+        this.r = r;
 
         var stop = {};
         stop[C.OPCODE] = "stop";
         stmts.push( stop );
         this.s = new State( stmts, functions );
-        this.timeout(() => { this.evalOperation() }, 0 ); // return to caller. Don't block the UI.
+
+    }
+
+    /**
+     * run the operations.
+     * . @param maxRunTime the time stamp at which the run method must have terminated. If 0 run as long as possible.
+     */
+    public run( maxRunTime: number ): any {
+        //        this.timeout(() => { this.evalOperation() }, 0 ); // return to caller. Don't block the UI.
+        this.evalOperation( maxRunTime );
     }
 
     /**
@@ -53,7 +58,7 @@ export class Interpreter {
     /**
      * the central interpreter. It is a stack machine interpreting operations given as JSON objects. The operations are all IMMUTABLE. It
      * - uses the S (state) component to store the state of the interpretation.
-     * - uses the N (native) component for accessing hardware sensors and actors
+     * - uses the R (robotBehaviour) component for accessing hardware sensors and actors
      * 
      * if the program is not terminated, it will take one operation after the other and execute it. The property C.OPCODE contains the
      * operation code and is used for switching to the various operations implementations. For some operation codes the implementations is extracted to
@@ -86,10 +91,11 @@ export class Interpreter {
      * - push and pop values to the stack (expressions)
      * - push and pop to the stack of operations-arrays
      */
-    private evalOperation() {
+    private evalOperation( maxRunTime: number ) {
         const s = this.s;
-        const n = this.n;
+        const n = this.r;
         topLevelLoop: while ( !this.terminated ) {
+            if (maxRunTime < new Date().getTime()) return;
             s.opLog( 'actual ops: ' );
             let stmt = s.getOp();
             if ( stmt === undefined ) {
@@ -168,7 +174,7 @@ export class Interpreter {
                     const port = stmt[C.PORT];
                     n.motorOnAction( name, port, duration, speed );
                     if ( duration >= 0 ) {
-                        this.timeout(() => { n.motorStopAction( name, port ); this.evalOperation() }, duration );
+                        this.timeout(() => { n.motorStopAction( name, port ); this.evalOperation(maxRunTime) }, duration );
                         return; // wait for handler being called
                     }
                     break;
@@ -196,8 +202,9 @@ export class Interpreter {
                     }
                     break;
                 case C.SHOW_TEXT_ACTION: {
-                    n.showTextAction( s.pop() );
-                    break;
+                    var text = s.pop();
+                    n.showTextAction( text );
+                    return;
                 }
                 case C.STATUS_LIGHT_ACTION:
                     n.statusLightOffAction( stmt[C.NAME], stmt[C.PORT] )
@@ -218,7 +225,7 @@ export class Interpreter {
                     const duration = s.pop();
                     const frequency = s.pop();
                     n.toneAction( stmt[C.NAME], frequency, duration );
-                    this.timeout(() => { this.evalOperation() }, duration );
+                    this.timeout(() => { this.evalOperation(maxRunTime) }, duration );
                     return; // wait for handler being called
                 }
                 case C.VAR_DECLARATION: {
@@ -233,7 +240,7 @@ export class Interpreter {
                 }
                 case C.WAIT_TIME_STMT: {
                     const time = s.pop();
-                    this.timeout(() => { this.evalOperation() }, time );
+                    this.timeout(() => { this.evalOperation(maxRunTime) }, time );
                     return; // wait for handler being called
                 }
                 default:

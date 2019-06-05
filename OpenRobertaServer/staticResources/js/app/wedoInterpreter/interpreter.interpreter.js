@@ -2,29 +2,32 @@ define(["require", "exports", "interpreter.state", "interpreter.constants", "int
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var Interpreter = (function () {
-        function Interpreter() {
-            this.terminated = false;
-            this.callbackOnTermination = undefined;
-        }
-        /**
-         * run the operations.
+        /*
          *
          * . @param generatedCode argument contains the operations and the function definitions
-         * . @param native implementation of the native interface Native to connect a real WeDo robot (or a test instance) to the interpreter
+         * . @param r implementation of the ARobotBehaviour class
          * . @param cbOnTermination is called when the program has terminated
-         */
-        Interpreter.prototype.run = function (generatedCode, native, cbOnTermination) {
-            var _this = this;
+        */
+        function Interpreter(generatedCode, r, cbOnTermination) {
+            this.terminated = false;
+            this.callbackOnTermination = undefined;
             this.terminated = false;
             this.callbackOnTermination = cbOnTermination;
             var stmts = generatedCode[C.OPS];
             var functions = generatedCode[C.FUNCTION_DECLARATION];
-            this.n = native;
+            this.r = r;
             var stop = {};
             stop[C.OPCODE] = "stop";
             stmts.push(stop);
             this.s = new interpreter_state_1.State(stmts, functions);
-            this.timeout(function () { _this.evalOperation(); }, 0); // return to caller. Don't block the UI.
+        }
+        /**
+         * run the operations.
+         * . @param maxRunTime the time stamp at which the run method must have terminated. If 0 run as long as possible.
+         */
+        Interpreter.prototype.run = function (maxRunTime) {
+            //        this.timeout(() => { this.evalOperation() }, 0 ); // return to caller. Don't block the UI.
+            this.evalOperation(maxRunTime);
         };
         /**
          * return true, if the program is terminated
@@ -42,7 +45,7 @@ define(["require", "exports", "interpreter.state", "interpreter.constants", "int
         /**
          * the central interpreter. It is a stack machine interpreting operations given as JSON objects. The operations are all IMMUTABLE. It
          * - uses the S (state) component to store the state of the interpretation.
-         * - uses the N (native) component for accessing hardware sensors and actors
+         * - uses the R (robotBehaviour) component for accessing hardware sensors and actors
          *
          * if the program is not terminated, it will take one operation after the other and execute it. The property C.OPCODE contains the
          * operation code and is used for switching to the various operations implementations. For some operation codes the implementations is extracted to
@@ -75,11 +78,13 @@ define(["require", "exports", "interpreter.state", "interpreter.constants", "int
          * - push and pop values to the stack (expressions)
          * - push and pop to the stack of operations-arrays
          */
-        Interpreter.prototype.evalOperation = function () {
+        Interpreter.prototype.evalOperation = function (maxRunTime) {
             var _this = this;
             var s = this.s;
-            var n = this.n;
+            var n = this.r;
             var _loop_1 = function () {
+                if (maxRunTime < new Date().getTime())
+                    return { value: void 0 };
                 s.opLog('actual ops: ');
                 var stmt = s.getOp();
                 if (stmt === undefined) {
@@ -159,7 +164,7 @@ define(["require", "exports", "interpreter.state", "interpreter.constants", "int
                         var port_1 = stmt[C.PORT];
                         n.motorOnAction(name_2, port_1, duration, speed);
                         if (duration >= 0) {
-                            this_1.timeout(function () { n.motorStopAction(name_2, port_1); _this.evalOperation(); }, duration);
+                            this_1.timeout(function () { n.motorStopAction(name_2, port_1); _this.evalOperation(maxRunTime); }, duration);
                             return { value: void 0 };
                         }
                         break;
@@ -188,8 +193,9 @@ define(["require", "exports", "interpreter.state", "interpreter.constants", "int
                         }
                         break;
                     case C.SHOW_TEXT_ACTION: {
-                        n.showTextAction(s.pop());
-                        break;
+                        text = s.pop();
+                        n.showTextAction(text);
+                        return { value: void 0 };
                     }
                     case C.STATUS_LIGHT_ACTION:
                         n.statusLightOffAction(stmt[C.NAME], stmt[C.PORT]);
@@ -210,7 +216,7 @@ define(["require", "exports", "interpreter.state", "interpreter.constants", "int
                         var duration = s.pop();
                         var frequency = s.pop();
                         n.toneAction(stmt[C.NAME], frequency, duration);
-                        this_1.timeout(function () { _this.evalOperation(); }, duration);
+                        this_1.timeout(function () { _this.evalOperation(maxRunTime); }, duration);
                         return { value: void 0 };
                     }
                     case C.VAR_DECLARATION: {
@@ -225,14 +231,14 @@ define(["require", "exports", "interpreter.state", "interpreter.constants", "int
                     }
                     case C.WAIT_TIME_STMT: {
                         var time = s.pop();
-                        this_1.timeout(function () { _this.evalOperation(); }, time);
+                        this_1.timeout(function () { _this.evalOperation(maxRunTime); }, time);
                         return { value: void 0 };
                     }
                     default:
                         U.dbcException("invalid stmt op: " + opCode);
                 }
             };
-            var this_1 = this;
+            var this_1 = this, text;
             topLevelLoop: while (!this.terminated) {
                 var state_1 = _loop_1();
                 if (typeof state_1 === "object")

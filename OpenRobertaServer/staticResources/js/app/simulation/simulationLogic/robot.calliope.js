@@ -8,8 +8,8 @@ define([ 'simulation.simulation', 'robertaLogic.constants', 'simulation.robot.mb
      * 
      * @class
      */
-    function Calliope(pose) {
-        Mbed.call(this, pose);
+    function Calliope(pose, num, robotBehaviour) {
+        Mbed.call(this, pose, num, robotBehaviour);
     }
     Calliope.prototype = Object.create(Mbed.prototype);
     Calliope.prototype.constructor = Calliope;
@@ -170,9 +170,10 @@ define([ 'simulation.simulation', 'robertaLogic.constants', 'simulation.robot.mb
      *            actions from the executing program: display, led ...
      * 
      */
-    Calliope.prototype.update = function(actions) {
-        // ParentClass.prototype.myMethod.call(this)
-        Mbed.prototype.update.call(this, actions);
+    Calliope.prototype.update = function() {
+        Mbed.prototype.update.call(this);
+        var state = this.robotBehaviour.getState();
+        var actions = state.actions;
         // update debug
         if (actions.led) {
             if (actions.led.color) {

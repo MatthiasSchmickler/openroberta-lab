@@ -1,7 +1,9 @@
 package de.fhg.iais.roberta.visitor.codegen;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import de.fhg.iais.roberta.components.Configuration;
@@ -74,8 +76,11 @@ public class MbedStackMachineVisitor<V> extends AbstractStackMachineVisitor<V> i
 
     @Override
     public V visitColorConst(ColorConst<V> colorConst) {
-        String color = colorConst.getHexValueAsString().toUpperCase();
-        JSONObject o = mk(C.EXPR).put(C.EXPR, "COLOR_CONST").put(C.VALUE, color);
+        int r = colorConst.getRedChannelInt();
+        int g = colorConst.getGreenChannelInt();
+        int b = colorConst.getBlueChannelInt();
+
+        JSONObject o = mk(C.EXPR).put(C.EXPR, "COLOR_CONST").put(C.VALUE, new JSONArray(Arrays.asList(r, g, b)));
         return app(o);
     }
 
@@ -89,7 +94,7 @@ public class MbedStackMachineVisitor<V> extends AbstractStackMachineVisitor<V> i
     @Override
     public V visitDisplayTextAction(DisplayTextAction<V> displayTextAction) {
         displayTextAction.getMsg().visit(this);
-        JSONObject o = mk(C.DISPLAY_TEXT_ACTION).put(C.MODE, displayTextAction.getMode());
+        JSONObject o = mk(C.SHOW_TEXT_ACTION).put(C.MODE, displayTextAction.getMode());
 
         return app(o);
     }
