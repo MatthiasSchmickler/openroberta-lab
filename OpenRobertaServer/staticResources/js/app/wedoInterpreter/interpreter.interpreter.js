@@ -2,29 +2,31 @@ define(["require", "exports", "interpreter.state", "interpreter.constants", "int
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var Interpreter = (function () {
-        function Interpreter() {
-            this.terminated = false;
-            this.callbackOnTermination = undefined;
-        }
-        /**
-         * run the operations.
+        /*
          *
          * . @param generatedCode argument contains the operations and the function definitions
-         * . @param native implementation of the native interface Native to connect a real WeDo robot (or a test instance) to the interpreter
+         * . @param r implementation of the ARobotBehaviour class
          * . @param cbOnTermination is called when the program has terminated
-         */
-        Interpreter.prototype.run = function (generatedCode, native, cbOnTermination) {
-            var _this = this;
+        */
+        function Interpreter(generatedCode, r, cbOnTermination) {
+            this.terminated = false;
+            this.callbackOnTermination = undefined;
             this.terminated = false;
             this.callbackOnTermination = cbOnTermination;
             var stmts = generatedCode[C.OPS];
             var functions = generatedCode[C.FUNCTION_DECLARATION];
-            this.n = native;
+            this.r = r;
             var stop = {};
             stop[C.OPCODE] = "stop";
             stmts.push(stop);
             this.s = new interpreter_state_1.State(stmts, functions);
-            this.timeout(function () { _this.evalOperation(); }, 0); // return to caller. Don't block the UI.
+        }
+        /**
+         * run the operations.
+         * . @param maxRunTime the time stamp at which the run method must have terminated. If 0 run as long as possible.
+         */
+        Interpreter.prototype.run = function (maxRunTime) {
+            return this.evalOperation(maxRunTime);
         };
         /**
          * return true, if the program is terminated
@@ -42,7 +44,7 @@ define(["require", "exports", "interpreter.state", "interpreter.constants", "int
         /**
          * the central interpreter. It is a stack machine interpreting operations given as JSON objects. The operations are all IMMUTABLE. It
          * - uses the S (state) component to store the state of the interpretation.
-         * - uses the N (native) component for accessing hardware sensors and actors
+         * - uses the R (robotBehaviour) component for accessing hardware sensors and actors
          *
          * if the program is not terminated, it will take one operation after the other and execute it. The property C.OPCODE contains the
          * operation code and is used for switching to the various operations implementations. For some operation codes the implementations is extracted to
@@ -75,16 +77,17 @@ define(["require", "exports", "interpreter.state", "interpreter.constants", "int
          * - push and pop values to the stack (expressions)
          * - push and pop to the stack of operations-arrays
          */
-        Interpreter.prototype.evalOperation = function () {
-            var _this = this;
+        Interpreter.prototype.evalOperation = function (maxRunTime) {
             var s = this.s;
-            var n = this.n;
-            var _loop_1 = function () {
+            var n = this.r;
+            topLevelLoop: while (!this.terminated) {
+                if (maxRunTime < new Date().getTime())
+                    return 0;
                 s.opLog('actual ops: ');
                 var stmt = s.getOp();
                 if (stmt === undefined) {
                     U.debug('PROGRAM TERMINATED. No ops remaining');
-                    return "break-topLevelLoop";
+                    break topLevelLoop;
                 }
                 var opCode = stmt[C.OPCODE];
                 switch (opCode) {
@@ -106,7 +109,7 @@ define(["require", "exports", "interpreter.state", "interpreter.constants", "int
                         break;
                     }
                     case C.EXPR:
-                        this_1.evalExpr(stmt);
+                        this.evalExpr(stmt);
                         break;
                     case C.FLOW_CONTROL: {
                         var conditional = stmt[C.CONDITIONAL];
@@ -121,7 +124,7 @@ define(["require", "exports", "interpreter.state", "interpreter.constants", "int
                         break;
                     }
                     case C.GET_SAMPLE: {
-                        n.getSample(s, stmt[C.NAME], stmt[C.PORT], stmt[C.GET_SAMPLE], stmt[C.SLOT]);
+                        n.getSample(s, stmt[C.NAME], stmt[C.GET_SAMPLE], stmt[C.PORT], stmt[C.SLOT]);
                         break;
                     }
                     case C.IF_STMT:
@@ -159,17 +162,31 @@ define(["require", "exports", "interpreter.state", "interpreter.constants", "int
                         var port_1 = stmt[C.PORT];
                         n.motorOnAction(name_2, port_1, duration, speed);
                         if (duration >= 0) {
-                            this_1.timeout(function () { n.motorStopAction(name_2, port_1); _this.evalOperation(); }, duration);
-                            return { value: void 0 };
+                            var motorStop = {};
+                            motorStop[C.OPCODE] = C.MOTOR_STOP;
+                            motorStop[C.NAME] = name_2;
+                            motorStop[C.PORT] = port_1;
+                            s.push(motorStop);
+                            return duration;
                         }
                         break;
                     }
+                    case C.BOTH_MOTORS_ON_ACTION: {
+                        var duration = s.pop();
+                        var speedB = s.pop();
+                        var speedA = s.pop();
+                        var portA = stmt[C.PORT_A];
+                        var portB = stmt[C.PORT_B];
+                        n.motorOnAction(portA, portA, duration, speedA);
+                        n.motorOnAction(portB, portB, duration, speedB);
+                        return 0;
+                    }
                     case C.MOTOR_STOP: {
                         n.motorStopAction(stmt[C.NAME], stmt[C.PORT]);
-                        break;
+                        return 0;
                     }
                     case C.REPEAT_STMT:
-                        this_1.evalRepeat(stmt);
+                        this.evalRepeat(stmt);
                         break;
                     case C.REPEAT_STMT_CONTINUATION:
                         if (stmt[C.MODE] === C.FOR || stmt[C.MODE] === C.TIMES) {
@@ -188,7 +205,27 @@ define(["require", "exports", "interpreter.state", "interpreter.constants", "int
                         }
                         break;
                     case C.SHOW_TEXT_ACTION: {
-                        n.showTextAction(s.pop());
+                        var text = s.pop();
+                        return n.showTextAction(text, stmt[C.MODE]);
+                    }
+                    case C.SHOW_IMAGE_ACTION: {
+                        var image = s.pop();
+                        return n.showImageAction(image, stmt[C.MODE]);
+                    }
+                    case C.DISPLAY_SET_BRIGHTNESS_ACTION: {
+                        var b = s.pop();
+                        return n.displaySetBrightnessAction(b);
+                    }
+                    case C.DISPLAY_SET_PIXEL_BRIGHTNESS_ACTION: {
+                        var b = s.pop();
+                        var y = s.pop();
+                        var x = s.pop();
+                        return n.displaySetPixelBrightnessAction(x, y, b);
+                    }
+                    case C.DISPLAY_GET_PIXEL_BRIGHTNESS_ACTION: {
+                        var y = s.pop();
+                        var x = s.pop();
+                        n.displayGetPixelBrightnessAction(s, x, y);
                         break;
                     }
                     case C.STATUS_LIGHT_ACTION:
@@ -196,7 +233,7 @@ define(["require", "exports", "interpreter.state", "interpreter.constants", "int
                         break;
                     case C.STOP:
                         U.debug("PROGRAM TERMINATED. stop op");
-                        return "break-topLevelLoop";
+                        break topLevelLoop;
                     case C.TEXT_JOIN:
                         var second = s.pop();
                         var first = s.pop();
@@ -210,8 +247,7 @@ define(["require", "exports", "interpreter.state", "interpreter.constants", "int
                         var duration = s.pop();
                         var frequency = s.pop();
                         n.toneAction(stmt[C.NAME], frequency, duration);
-                        this_1.timeout(function () { _this.evalOperation(); }, duration);
-                        return { value: void 0 };
+                        return duration;
                     }
                     case C.VAR_DECLARATION: {
                         var name_3 = stmt[C.NAME];
@@ -225,26 +261,24 @@ define(["require", "exports", "interpreter.state", "interpreter.constants", "int
                     }
                     case C.WAIT_TIME_STMT: {
                         var time = s.pop();
-                        this_1.timeout(function () { _this.evalOperation(); }, time);
-                        return { value: void 0 };
+                        return time; // wait for handler being called
+                    }
+                    case C.WRITE_PIN_ACTION: {
+                        var value = s.pop();
+                        var mode = stmt[C.MODE];
+                        var pin = stmt[C.PIN];
+                        n.writePinAction(pin, mode, value);
+                        return 0;
                     }
                     default:
                         U.dbcException("invalid stmt op: " + opCode);
-                }
-            };
-            var this_1 = this;
-            topLevelLoop: while (!this.terminated) {
-                var state_1 = _loop_1();
-                if (typeof state_1 === "object")
-                    return state_1.value;
-                switch (state_1) {
-                    case "break-topLevelLoop": break topLevelLoop;
                 }
             }
             // termination either requested by the client or by executing 'stop' or after last statement
             this.terminated = true;
             n.close();
             this.callbackOnTermination();
+            return 0;
         };
         /**
          *  called from @see evalOperation() to evaluate all kinds of expressions
@@ -261,6 +295,16 @@ define(["require", "exports", "interpreter.state", "interpreter.constants", "int
                 case C.NUM_CONST:
                     s.push(+expr[C.VALUE]);
                     break;
+                case C.CREATE_LIST: {
+                    var n = expr[C.NUMBER];
+                    var arr = new Array(n);
+                    for (var i = 0; i < n; i++) {
+                        var e = s.pop();
+                        arr[n - i - 1] = e;
+                    }
+                    s.push(arr);
+                    break;
+                }
                 case C.BOOL_CONST:
                     s.push(expr[C.VALUE]);
                     break;
@@ -268,6 +312,9 @@ define(["require", "exports", "interpreter.state", "interpreter.constants", "int
                     s.push(expr[C.VALUE]);
                     break;
                 case C.COLOR_CONST:
+                    s.push(expr[C.VALUE]);
+                    break;
+                case C.IMAGE:
                     s.push(expr[C.VALUE]);
                     break;
                 case C.UNARY: {
@@ -427,6 +474,121 @@ define(["require", "exports", "interpreter.state", "interpreter.constants", "int
                     }
                     break;
                 }
+                case C.MATH_ON_LIST: {
+                    var subOp = expr[C.OP];
+                    var value = s.pop();
+                    switch (subOp) {
+                        case C.SUM:
+                            s.push(this.sum(value));
+                            break;
+                        case C.MIN:
+                            s.push(this.min(value));
+                            break;
+                        case C.MAX:
+                            s.push(this.max(value));
+                            break;
+                        case C.AVERAGE:
+                            s.push(this.mean(value));
+                            break;
+                        case C.MEDIAN:
+                            s.push(this.median(value));
+                            break;
+                        case C.STD_DEV:
+                            s.push(this.std(value));
+                            break;
+                        case C.RANDOM:
+                            s.push(value[this.getRandomInt(value.length)]);
+                            break;
+                        default:
+                            throw "Invalid Math on List Function Name";
+                    }
+                    break;
+                }
+                case C.LIST_OPERATION: {
+                    var subOp = expr[C.OP];
+                    switch (subOp) {
+                        case C.LIST_IS_EMPTY:
+                            s.push(s.pop().length == 0);
+                            break;
+                        case C.LIST_LENGTH:
+                            s.push(s.pop().length);
+                            break;
+                        case C.LIST_FIND_ITEM:
+                            {
+                                var item = s.pop();
+                                var list = s.pop();
+                                if (expr[C.POSITION] == C.FIRST) {
+                                    s.push(list.indexOf(item));
+                                }
+                                else {
+                                    s.push(list.lastIndexOf(item));
+                                }
+                            }
+                            break;
+                        case C.GET:
+                            {
+                                var position = expr[C.POSITION];
+                                var ix = void 0;
+                                var list = void 0;
+                                switch (position) {
+                                    case C.FROM_START:
+                                        ix = s.pop();
+                                        list = s.pop();
+                                        s.push(list[ix]);
+                                        break;
+                                    case C.FROM_END:
+                                        ix = s.pop();
+                                        list = s.pop();
+                                        s.push(list.slice(-(ix + 1))[0]);
+                                        break;
+                                    case C.FIRST:
+                                        list = s.pop();
+                                        s.push(list[0]);
+                                        break;
+                                    case C.LAST:
+                                        list = s.pop();
+                                        s.push(list.slice(-1)[0]);
+                                        break;
+                                    default:
+                                        throw "Invalid Position for List Manipulation";
+                                }
+                            }
+                            break;
+                        case C.GET_REMOVE:
+                            {
+                                var position = expr[C.POSITION];
+                                var ix = void 0;
+                                var list = void 0;
+                                switch (position) {
+                                    case C.FROM_START:
+                                        ix = s.pop();
+                                        list = s.pop();
+                                        s.push(list.splice(ix, 1)[0]);
+                                        break;
+                                    case C.FROM_END:
+                                        ix = s.pop();
+                                        list = s.pop();
+                                        ix = list.length - ix - 1;
+                                        s.push(list.splice(ix, 1)[0]);
+                                        break;
+                                    case C.FIRST:
+                                        list = s.pop();
+                                        s.push(list.shift());
+                                        break;
+                                    case C.LAST:
+                                        list = s.pop();
+                                        s.push(list.pop());
+                                        break;
+                                    default:
+                                        throw "Invalid Position for List Manipulation";
+                                }
+                            }
+                            break;
+                        default:
+                            throw "Invalid Op on List Function Name";
+                    }
+                    break;
+                }
                 case C.BINARY: {
                     var subOp = expr[C.OP];
                     var right = s.pop();
@@ -573,15 +735,49 @@ define(["require", "exports", "interpreter.state", "interpreter.constants", "int
             if (this.terminated) {
                 callback();
             }
-            else if (durationInMilliSec > 100) {
-                // U.p( 'waiting for 100 msec from ' + durationInMilliSec + ' msec' );
-                durationInMilliSec -= 100;
-                setTimeout(function () { _this.timeout(callback, durationInMilliSec); }, 100);
-            }
             else {
-                // U.p( 'waiting for ' + durationInMilliSec + ' msec' );
-                setTimeout(function () { callback(); }, durationInMilliSec);
+                if (durationInMilliSec > 100) {
+                    // U.p( 'waiting for 100 msec from ' + durationInMilliSec + ' msec' );
+                    durationInMilliSec -= 100;
+                    setTimeout(function () { _this.timeout(callback, durationInMilliSec); }, 100);
+                }
+                else {
+                    // U.p( 'waiting for ' + durationInMilliSec + ' msec' );
+                    setTimeout(function () { callback(); }, durationInMilliSec);
+                }
             }
+        };
+        Interpreter.prototype.min = function (values) {
+            return Math.min.apply(null, values);
+        };
+        Interpreter.prototype.max = function (values) {
+            return Math.max.apply(null, values);
+        };
+        Interpreter.prototype.sum = function (values) {
+            return values.reduce(function (a, b) { return a + b; }, 0);
+        };
+        Interpreter.prototype.mean = function (value) {
+            var v = this.sum(value) / value.length;
+            return Number(v.toFixed(2));
+        };
+        Interpreter.prototype.median = function (values) {
+            values.sort(function (a, b) { return a - b; });
+            var median = (values[(values.length - 1) >> 1] + values[values.length >> 1]) / 2;
+            return Number(median.toFixed(2));
+        };
+        Interpreter.prototype.std = function (values) {
+            var avg = this.mean(values);
+            var diffs = values.map(function (value) { return value - avg; });
+            var squareDiffs = diffs.map(function (diff) { return diff * diff; });
+            var avgSquareDiff = this.mean(squareDiffs);
+            return Number(Math.sqrt(avgSquareDiff).toFixed(2));
+        };
+        Interpreter.prototype.getRandomInt = function (max) {
+            return Math.floor(Math.random() * Math.floor(max));
+        };
+        Interpreter.prototype.round2precision = function (x, precision) {
+            var y = +x + (precision === undefined ? 0.5 : precision / 2);
+            return y - (y % (precision === undefined ? 1 : +precision));
         };
         return Interpreter;
     }());

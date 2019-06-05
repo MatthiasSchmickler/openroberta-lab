@@ -1,4 +1,4 @@
-import { Native } from "interpreter.nativeInterface";
+import { ARobotBehaviour } from "interpreter.aRobotBehaviour";
 import { State } from "interpreter.state";
 import * as C from "interpreter.constants";
 import * as U from "interpreter.util";
@@ -8,31 +8,35 @@ export class Interpreter {
     private terminated = false;
     private callbackOnTermination = undefined;
 
-    private n: Native; // implementation of the NativeInterface to connect a real WeDo robot (or a test instance) to the interpreter
+    private r: ARobotBehaviour;
     private s: State; // the state of the interpreter (ops, pc, bindings, stack, ...)
 
-    constructor() {
-    }
-
-    /**
-     * run the operations.
+    /*
      * 
      * . @param generatedCode argument contains the operations and the function definitions
-     * . @param native implementation of the native interface Native to connect a real WeDo robot (or a test instance) to the interpreter
+     * . @param r implementation of the ARobotBehaviour class
      * . @param cbOnTermination is called when the program has terminated
-     */
-    public run( generatedCode: any, native: Native, cbOnTermination: () => void ) {
+    */
+    constructor( generatedCode: any, r: ARobotBehaviour, cbOnTermination: () => void ) {
         this.terminated = false;
         this.callbackOnTermination = cbOnTermination;
         const stmts = generatedCode[C.OPS];
         const functions = generatedCode[C.FUNCTION_DECLARATION];
-        this.n = native;
+        this.r = r;
 
         var stop = {};
         stop[C.OPCODE] = "stop";
         stmts.push( stop );
         this.s = new State( stmts, functions );
-        this.timeout(() => { this.evalOperation() }, 0 ); // return to caller. Don't block the UI.
+
+    }
+
+    /**
+     * run the operations.
+     * . @param maxRunTime the time stamp at which the run method must have terminated. If 0 run as long as possible.
+     */
+    public run( maxRunTime: number ): number {
+        return this.evalOperation( maxRunTime );
     }
 
     /**
@@ -53,7 +57,7 @@ export class Interpreter {
     /**
      * the central interpreter. It is a stack machine interpreting operations given as JSON objects. The operations are all IMMUTABLE. It
      * - uses the S (state) component to store the state of the interpretation.
-     * - uses the N (native) component for accessing hardware sensors and actors
+     * - uses the R (robotBehaviour) component for accessing hardware sensors and actors
      * 
      * if the program is not terminated, it will take one operation after the other and execute it. The property C.OPCODE contains the
      * operation code and is used for switching to the various operations implementations. For some operation codes the implementations is extracted to
@@ -86,10 +90,11 @@ export class Interpreter {
      * - push and pop values to the stack (expressions)
      * - push and pop to the stack of operations-arrays
      */
-    private evalOperation() {
+    private evalOperation( maxRunTime: number ): number {
         const s = this.s;
-        const n = this.n;
+        const n = this.r;
         topLevelLoop: while ( !this.terminated ) {
+            if ( maxRunTime < new Date().getTime() ) return 0;
             s.opLog( 'actual ops: ' );
             let stmt = s.getOp();
             if ( stmt === undefined ) {
@@ -131,7 +136,7 @@ export class Interpreter {
                     break;
                 }
                 case C.GET_SAMPLE: {
-                    n.getSample( s, stmt[C.NAME], stmt[C.PORT], stmt[C.GET_SAMPLE], stmt[C.SLOT] )
+                    n.getSample( s, stmt[C.NAME], stmt[C.GET_SAMPLE], stmt[C.PORT], stmt[C.SLOT] )
                     break;
                 }
                 case C.IF_STMT:
@@ -168,14 +173,29 @@ export class Interpreter {
                     const port = stmt[C.PORT];
                     n.motorOnAction( name, port, duration, speed );
                     if ( duration >= 0 ) {
-                        this.timeout(() => { n.motorStopAction( name, port ); this.evalOperation() }, duration );
-                        return; // wait for handler being called
+                        const motorStop = {};
+                        motorStop[C.OPCODE] = C.MOTOR_STOP;
+                        motorStop[C.NAME] = name;
+                        motorStop[C.PORT] = port;
+                        s.push( motorStop );
+
+                        return duration;
                     }
                     break;
                 }
+                case C.BOTH_MOTORS_ON_ACTION: {
+                    const duration = s.pop();
+                    const speedB = s.pop();
+                    const speedA = s.pop();
+                    const portA = stmt[C.PORT_A];
+                    const portB = stmt[C.PORT_B];
+                    n.motorOnAction( portA, portA, duration, speedA );
+                    n.motorOnAction( portB, portB, duration, speedB );
+                    return 0;
+                }
                 case C.MOTOR_STOP: {
                     n.motorStopAction( stmt[C.NAME], stmt[C.PORT] );
-                    break;
+                    return 0;
                 }
                 case C.REPEAT_STMT:
                     this.evalRepeat( stmt );
@@ -196,7 +216,27 @@ export class Interpreter {
                     }
                     break;
                 case C.SHOW_TEXT_ACTION: {
-                    n.showTextAction( s.pop() );
+                    const text = s.pop();
+                    return n.showTextAction( text, stmt[C.MODE] );
+                }
+                case C.SHOW_IMAGE_ACTION: {
+                    const image = s.pop();
+                    return n.showImageAction( image, stmt[C.MODE] );
+                }
+                case C.DISPLAY_SET_BRIGHTNESS_ACTION: {
+                    const b = s.pop();
+                    return n.displaySetBrightnessAction( b );
+                }
+                case C.DISPLAY_SET_PIXEL_BRIGHTNESS_ACTION: {
+                    const b = s.pop();
+                    const y = s.pop();
+                    const x = s.pop();
+                    return n.displaySetPixelBrightnessAction( x, y, b );
+                }
+                case C.DISPLAY_GET_PIXEL_BRIGHTNESS_ACTION: {
+                    const y = s.pop();
+                    const x = s.pop();
+                    n.displayGetPixelBrightnessAction( s, x, y );
                     break;
                 }
                 case C.STATUS_LIGHT_ACTION:
@@ -218,8 +258,7 @@ export class Interpreter {
                     const duration = s.pop();
                     const frequency = s.pop();
                     n.toneAction( stmt[C.NAME], frequency, duration );
-                    this.timeout(() => { this.evalOperation() }, duration );
-                    return; // wait for handler being called
+                    return duration;
                 }
                 case C.VAR_DECLARATION: {
                     const name = stmt[C.NAME];
@@ -233,8 +272,15 @@ export class Interpreter {
                 }
                 case C.WAIT_TIME_STMT: {
                     const time = s.pop();
-                    this.timeout(() => { this.evalOperation() }, time );
-                    return; // wait for handler being called
+                    return time; // wait for handler being called
+                }
+                case C.WRITE_PIN_ACTION: {
+                    const value = s.pop();
+                    const mode = stmt[C.MODE];
+                    const pin = stmt[C.PIN];
+
+                    n.writePinAction( pin, mode, value );
+                    return 0;
                 }
                 default:
                     U.dbcException( "invalid stmt op: " + opCode );
@@ -244,6 +290,7 @@ export class Interpreter {
         this.terminated = true;
         n.close();
         this.callbackOnTermination();
+        return 0;
     }
 
     /**
@@ -261,6 +308,17 @@ export class Interpreter {
             case C.NUM_CONST:
                 s.push( +expr[C.VALUE] );
                 break;
+            case C.CREATE_LIST: {
+                const n = expr[C.NUMBER];
+                var arr = new Array( n );
+                for ( let i = 0; i < n; i++ ) {
+                    const e = s.pop();
+                    arr[n - i - 1] = e;
+                }
+                s.push( arr );
+                break;
+            }
+
             case C.BOOL_CONST:
                 s.push( expr[C.VALUE] );
                 break;
@@ -268,6 +326,9 @@ export class Interpreter {
                 s.push( expr[C.VALUE] );
                 break;
             case C.COLOR_CONST:
+                s.push( expr[C.VALUE] );
+                break;
+            case C.IMAGE:
                 s.push( expr[C.VALUE] );
                 break;
             case C.UNARY: {
@@ -368,6 +429,109 @@ export class Interpreter {
                     default:
                         throw "Invalid Math Property Function Name";
                 }
+                break;
+            }
+            case C.MATH_ON_LIST: {
+                const subOp = expr[C.OP];
+                const value = s.pop();
+                switch ( subOp ) {
+                    case C.SUM: s.push( this.sum( value ) ); break;
+                    case C.MIN: s.push( this.min( value ) ); break;
+                    case C.MAX: s.push( this.max( value ) ); break;
+                    case C.AVERAGE: s.push( this.mean( value ) ); break;
+                    case C.MEDIAN: s.push( this.median( value ) ); break;
+                    case C.STD_DEV: s.push( this.std( value ) ); break;
+                    case C.RANDOM: s.push( value[this.getRandomInt( value.length )] ); break;
+
+                    default:
+                        throw "Invalid Math on List Function Name";
+                }
+                break;
+            }
+            case C.LIST_OPERATION: {
+                const subOp = expr[C.OP];
+                switch ( subOp ) {
+                    case C.LIST_IS_EMPTY:
+                        s.push( s.pop().length == 0 );
+                        break;
+                    case C.LIST_LENGTH:
+                        s.push( s.pop().length );
+                        break;
+                    case C.LIST_FIND_ITEM: {
+                        const item = s.pop();
+                        const list = s.pop();
+                        if ( expr[C.POSITION] == C.FIRST ) {
+                            s.push( list.indexOf( item ) );
+                        } else {
+                            s.push( list.lastIndexOf( item ) );
+                        }
+                    }
+                        break;
+                    case C.GET: {
+                        const position = expr[C.POSITION];
+                        let ix;
+                        let list;
+                        switch ( position ) {
+                            case C.FROM_START:
+                                ix = s.pop();
+                                list = s.pop();
+                                s.push( list[ix] );
+                                break;
+                            case C.FROM_END:
+                                ix = s.pop();
+                                list = s.pop();
+                                s.push( list.slice( -( ix + 1 ) )[0] );
+                                break;
+                            case C.FIRST:
+                                list = s.pop();
+                                s.push( list[0] );
+                                break;
+                            case C.LAST:
+                                list = s.pop();
+                                s.push( list.slice( -1 )[0] );
+                                break;
+                            default:
+                                throw "Invalid Position for List Manipulation";
+                        }
+
+                    }
+                        break;
+
+                    case C.GET_REMOVE: {
+                        const position = expr[C.POSITION];
+                        let ix;
+                        let list;
+                        switch ( position ) {
+                            case C.FROM_START:
+                                ix = s.pop();
+                                list = s.pop();
+                                s.push( list.splice( ix, 1 )[0] );
+                                break;
+                            case C.FROM_END:
+                                ix = s.pop();
+                                list = s.pop();
+                                ix = list.length - ix - 1;
+                                s.push( list.splice( ix, 1 )[0] );
+                                break;
+                            case C.FIRST:
+                                list = s.pop();
+                                s.push( list.shift() );
+                                break;
+                            case C.LAST:
+                                list = s.pop();
+                                s.push( list.pop() );
+                                break;
+                            default:
+                                throw "Invalid Position for List Manipulation";
+                        }
+
+                    }
+                        break;
+             
+                    default:
+                        throw "Invalid Op on List Function Name";
+                }
+                
                 break;
             }
             case C.BINARY: {
@@ -475,7 +639,7 @@ export class Interpreter {
     private timeout( callback: () => void, durationInMilliSec: number ) {
         if ( this.terminated ) {
             callback();
-        } else
+        } else {
             if ( durationInMilliSec > 100 ) {
                 // U.p( 'waiting for 100 msec from ' + durationInMilliSec + ' msec' );
                 durationInMilliSec -= 100;
@@ -484,5 +648,47 @@ export class Interpreter {
                 // U.p( 'waiting for ' + durationInMilliSec + ' msec' );
                 setTimeout(() => { callback() }, durationInMilliSec );
             }
+        }
+    }
+
+    private min( values: Array<number> ): number {
+        return Math.min.apply( null, values );
+    }
+
+    private max( values: Array<number> ): number {
+        return Math.max.apply( null, values );
+    }
+
+    private sum( values: Array<number> ): number {
+        return values.reduce(( a, b ) => a + b, 0 );
+    }
+
+    private mean( value: Array<number> ): number {
+        const v = this.sum( value ) / value.length;
+        return Number( v.toFixed( 2 ) );
+    }
+
+    private median( values: Array<number> ): number {
+        values.sort(( a, b ) => a - b );
+        const median = ( values[( values.length - 1 ) >> 1] + values[values.length >> 1] ) / 2;
+        return Number( median.toFixed( 2 ) )
+    }
+
+    private std( values: Array<number> ): number {
+        const avg = this.mean( values );
+        const diffs = values.map(( value ) => value - avg );
+        const squareDiffs = diffs.map(( diff ) => diff * diff );
+        const avgSquareDiff = this.mean( squareDiffs );
+        return Number( Math.sqrt( avgSquareDiff ).toFixed( 2 ) );
+
+    }
+
+    private getRandomInt( max: number ): number {
+        return Math.floor( Math.random() * Math.floor( max ) );
+    }
+
+    private round2precision( x: number, precision: number ): number {
+        var y = +x + ( precision === undefined ? 0.5 : precision / 2 );
+        return y - ( y % ( precision === undefined ? 1 : +precision ) );
     }
 }

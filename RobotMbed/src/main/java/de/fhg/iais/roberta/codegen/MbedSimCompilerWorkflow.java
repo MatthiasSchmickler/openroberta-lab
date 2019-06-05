@@ -13,7 +13,7 @@ import de.fhg.iais.roberta.util.Key;
 import de.fhg.iais.roberta.util.PluginProperties;
 import de.fhg.iais.roberta.util.dbc.DbcException;
 import de.fhg.iais.roberta.util.jaxb.JaxbHelper;
-import de.fhg.iais.roberta.visitor.codegen.MbedSimVisitor;
+import de.fhg.iais.roberta.visitor.codegen.MbedStackMachineVisitor;
 
 public class MbedSimCompilerWorkflow extends AbstractCompilerWorkflow {
     private static final Logger LOG = LoggerFactory.getLogger(MbedSimCompilerWorkflow.class);
@@ -25,15 +25,15 @@ public class MbedSimCompilerWorkflow extends AbstractCompilerWorkflow {
     @Override
     public void generateSourceCode(String token, String programName, BlocklyProgramAndConfigTransformer data, ILanguage language) {
         if ( data.getErrorMessage() != null ) {
-            workflowResult = Key.COMPILERWORKFLOW_ERROR_PROGRAM_TRANSFORM_FAILED;
+            this.workflowResult = Key.COMPILERWORKFLOW_ERROR_PROGRAM_TRANSFORM_FAILED;
             return;
         }
         try {
-            generatedSourceCode = MbedSimVisitor.generate(data.getRobotConfiguration(), data.getProgramTransformer().getTree());
+            this.generatedSourceCode = MbedStackMachineVisitor.generate(data.getRobotConfiguration(), data.getProgramTransformer().getTree());
             LOG.info("javascript mbed simulation code generated");
         } catch ( Exception e ) {
             LOG.error("javascript mbed simulation code generation failed", e);
-            workflowResult = Key.COMPILERWORKFLOW_ERROR_PROGRAM_GENERATION_FAILED;
+            this.workflowResult = Key.COMPILERWORKFLOW_ERROR_PROGRAM_GENERATION_FAILED;
         }
     }
 

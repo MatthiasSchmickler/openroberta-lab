@@ -10,8 +10,9 @@ define([ 'simulation.simulation', 'robertaLogic.constants' ], function(SIM, CONS
      * 
      * @class
      */
-    function Robot(pose) {
+    function Robot(pose, robotBehaviour) {
         this.pose = pose;
+        this.robotBehaviour = robotBehaviour
 
         var initialPose = {
             x : pose.x,
