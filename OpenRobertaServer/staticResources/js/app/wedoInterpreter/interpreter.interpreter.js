@@ -196,7 +196,11 @@ define(["require", "exports", "interpreter.state", "interpreter.constants", "int
                         break;
                     case C.SHOW_TEXT_ACTION: {
                         var text = s.pop();
-                        return n.showTextAction(text);
+                        return n.showTextAction(text, stmt[C.MODE]);
+                    }
+                    case C.SHOW_IMAGE_ACTION: {
+                        var image = s.pop();
+                        return n.showImageAction(image, stmt[C.MODE]);
                     }
                     case C.STATUS_LIGHT_ACTION:
                         n.statusLightOffAction(stmt[C.NAME], stmt[C.PORT]);

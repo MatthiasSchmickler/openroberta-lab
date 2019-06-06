@@ -25,7 +25,7 @@ public class C {
     public static final String BUTTONS = "buttons";
     public static final String BUTTON_A = "A";
     public static final String BUTTON_B = "B";
-    public static final String CHARACTER = "character";
+    public static final String CHARACTER = "CHARACTER";
     public static final String CLEAR_DISPLAY_ACTION = "ClearDisplay";
     public static final String COLOR = "color";
     public static final String COLOR_CONST = "COLOR_CONST";
@@ -217,7 +217,7 @@ public class C {
     public static final String SET_LANGUAGE_ACTION = "SetLanguageAction";
     public static final String SET_VOLUME_ACTION = "SetVolumeAction";
     public static final String SHAKE = "shake";
-    public static final String SHOW_PICTURE_ACTION = "ShowPictureAction";
+    public static final String SHOW_IMAGE_ACTION = "ShowImageAction";
     public static final String SHOW_TEXT_ACTION = "ShowTextAction";
     public static final String SINGLE_FUNCTION = "SingleFunction";
     public static final String SIZE = "size";
@@ -237,7 +237,7 @@ public class C {
     public static final String SUM = "sum";
     public static final String TEMPERATURE = "temperature";
     public static final String TERNARY_EXPR = "createTernaryExpr";
-    public static final String TEXT = "text";
+    public static final String TEXT = "TEXT";
     public static final String TEXT_APPEND = "textAppend";
     public static final String TEXT_JOIN = "createTextJoin";
     public static final String THEN_LIST = "thenList";

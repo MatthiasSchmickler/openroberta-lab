@@ -4,14 +4,10 @@ import * as C from "interpreter.constants";
 import * as U from "interpreter.util";
 
 export class RobotMbedBehaviour extends ARobotBehaviour {
-    private hardwareState;
 
     constructor() {
         super();
-        this.hardwareState = {};
-        this.hardwareState.timers = {};
-        this.hardwareState.actions = {};
-        this.hardwareState.sensors = {};
+
         U.loggingEnabled(false, false);
     }
 
@@ -60,7 +56,6 @@ export class RobotMbedBehaviour extends ARobotBehaviour {
     }
 
     public ledOnAction(name: string, port: number, color: number) {
-        //        var brickid = WEDO.getBrickIdByName( name );
         const robotText = 'robot: ' + name + ', port: ' + port;
         U.debug(robotText + ' led on color ' + color);
         this.hardwareState.actions.led = {};
@@ -100,12 +95,32 @@ export class RobotMbedBehaviour extends ARobotBehaviour {
         //        WEBVIEW_C.jsToAppInterface( cmd );
     }
 
-    public showTextAction(text: any): number {
+    public showTextAction(text: any, mode: string): number {
         const showText = "" + text;
         U.debug('***** show "' + showText + '" *****');
-        const duration = (showText.length + 1) * 7 * 150;
+        const textLen = showText.length;
+        let duration = 0;
+        if (mode == C.TEXT) {
+            duration = (textLen + 1) * 7 * 150;
+        } else if (mode == C.CHARACTER && textLen > 1) {
+            duration = textLen * 400;
+        }
         this.hardwareState.actions.display = {};
-        this.hardwareState.actions.display.text = showText;
+        this.hardwareState.actions.display[mode.toLowerCase()] = showText;
+        return duration;
+    }
+
+    public showImageAction(image: any, mode: string): number {
+        const showImage = "" + image;
+        U.debug('***** show "' + showImage + '" *****');
+        const imageLen = image.length;
+        let duration = 0;
+        if (mode == C.ANIMATION) {
+            duration = imageLen * 200;
+        }
+        this.hardwareState.actions.display = {};
+        this.hardwareState.action.display.picture = image;
+        this.hardwareState.actions.display.mode = mode.toLowerCase();
         return duration;
     }
 

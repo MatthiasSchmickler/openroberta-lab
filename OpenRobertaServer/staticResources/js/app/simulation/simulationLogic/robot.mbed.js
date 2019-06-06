@@ -186,7 +186,8 @@ define(['simulation.simulation', 'robertaLogic.constants', 'util'], function (SI
         if (actions.display) {
             if (actions.display.text) {
                 var that = Mbed.prototype;
-                var textArray = generateText(actions.display.text);
+                var text = this.robotBehaviour.getActionState("display", "text", true);
+                var textArray = generateText(text);
                 function f(textArray, that) {
                     if (textArray && textArray.length >= 5) {
                         var array = textArray.slice(0, 5);
@@ -201,11 +202,11 @@ define(['simulation.simulation', 'robertaLogic.constants', 'util'], function (SI
                     }
                 }
                 f(textArray, that);
-                delete actions.display.text;
             }
             if (actions.display.character) {
                 var that = Mbed.prototype;
-                var textArray = generatecharacter(actions.display.character);
+                var characters = this.robotBehaviour.getActionState("display", "character", true);
+                var textArray = generatecharacter(characters);
                 function f(textArray, that) {
                     if (textArray && textArray.length >= 5) {
                         var array = textArray.slice(0, 5);

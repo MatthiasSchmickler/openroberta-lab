@@ -15,10 +15,6 @@ define(["require", "exports", "interpreter.aRobotBehaviour", "interpreter.consta
         __extends(RobotMbedBehaviour, _super);
         function RobotMbedBehaviour() {
             var _this = _super.call(this) || this;
-            _this.hardwareState = {};
-            _this.hardwareState.timers = {};
-            _this.hardwareState.actions = {};
-            _this.hardwareState.sensors = {};
             U.loggingEnabled(false, false);
             return _this;
         }
@@ -62,7 +58,6 @@ define(["require", "exports", "interpreter.aRobotBehaviour", "interpreter.consta
             return delta;
         };
         RobotMbedBehaviour.prototype.ledOnAction = function (name, port, color) {
-            //        var brickid = WEDO.getBrickIdByName( name );
             var robotText = 'robot: ' + name + ', port: ' + port;
             U.debug(robotText + ' led on color ' + color);
             this.hardwareState.actions.led = {};
@@ -97,12 +92,32 @@ define(["require", "exports", "interpreter.aRobotBehaviour", "interpreter.consta
             //        const cmd = { 'target': 'wedo', 'type': 'command', 'actuator': 'motor', 'brickid': brickid, 'action': 'stop', 'id': port };
             //        WEBVIEW_C.jsToAppInterface( cmd );
         };
-        RobotMbedBehaviour.prototype.showTextAction = function (text) {
+        RobotMbedBehaviour.prototype.showTextAction = function (text, mode) {
             var showText = "" + text;
             U.debug('***** show "' + showText + '" *****');
-            var duration = (showText.length + 1) * 7 * 150;
+            var textLen = showText.length;
+            var duration = 0;
+            if (mode == C.TEXT) {
+                duration = (textLen + 1) * 7 * 150;
+            }
+            else if (mode == C.CHARACTER && textLen > 1) {
+                duration = textLen * 400;
+            }
             this.hardwareState.actions.display = {};
-            this.hardwareState.actions.display.text = showText;
+            this.hardwareState.actions.display[mode.toLowerCase()] = showText;
+            return duration;
+        };
+        RobotMbedBehaviour.prototype.showImageAction = function (image, mode) {
+            var showImage = "" + image;
+            U.debug('***** show "' + showImage + '" *****');
+            var imageLen = image.length;
+            var duration = 0;
+            if (mode == C.ANIMATION) {
+                duration = imageLen * 200;
+            }
+            this.hardwareState.actions.display = {};
+            this.hardwareState.action.display.picture = image;
+            this.hardwareState.actions.display.mode = mode.toLowerCase();
             return duration;
         };
         RobotMbedBehaviour.prototype.getState = function () {

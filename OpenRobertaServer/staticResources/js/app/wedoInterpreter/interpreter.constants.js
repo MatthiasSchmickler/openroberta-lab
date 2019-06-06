@@ -25,7 +25,7 @@ define(["require", "exports"], function (require, exports) {
     exports.BUTTONS = "buttons";
     exports.BUTTON_A = "A";
     exports.BUTTON_B = "B";
-    exports.CHARACTER = "character";
+    exports.CHARACTER = "CHARACTER";
     exports.CLEAR_DISPLAY_ACTION = "ClearDisplay";
     exports.COLOR = "color";
     exports.COLOR_CONST = "COLOR_CONST";
@@ -215,7 +215,7 @@ define(["require", "exports"], function (require, exports) {
     exports.SET_LANGUAGE_ACTION = "SetLanguageAction";
     exports.SET_VOLUME_ACTION = "SetVolumeAction";
     exports.SHAKE = "shake";
-    exports.SHOW_PICTURE_ACTION = "ShowPictureAction";
+    exports.SHOW_IMAGE_ACTION = "ShowImageAction";
     exports.SHOW_TEXT_ACTION = "ShowTextAction";
     exports.SINGLE_FUNCTION = "SingleFunction";
     exports.SIZE = "size";
@@ -235,7 +235,7 @@ define(["require", "exports"], function (require, exports) {
     exports.SUM = "sum";
     exports.TEMPERATURE = "temperature";
     exports.TERNARY_EXPR = "createTernaryExpr";
-    exports.TEXT = "text";
+    exports.TEXT = "TEXT";
     exports.TEXT_APPEND = "textAppend";
     exports.TEXT_JOIN = "createTextJoin";
     exports.THEN_LIST = "thenList";

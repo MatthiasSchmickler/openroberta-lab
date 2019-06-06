@@ -1,7 +1,6 @@
-define([ 'exports', 'util', 'log', 'message', 'guiState.model', 'progHelp.controller', 'webview.controller', 'interpreter.robotWeDoBehaviour', 'socket.controller', 'jquery' ], function(exports,
-        UTIL, LOG, MSG, GUISTATE, HELP_C, WEBVIEW_C, WEDO, SOCKET_C, $) {
+define([ 'exports', 'util', 'log', 'message', 'guiState.model', 'progHelp.controller', 'webview.controller', 'socket.controller', 'jquery' ], function(exports,
+        UTIL, LOG, MSG, GUISTATE, HELP_C, WEBVIEW_C, SOCKET_C, $) {
 
-    var wedo;
     /**
      * Init robot
      */
@@ -20,8 +19,7 @@ define([ 'exports', 'util', 'log', 'message', 'guiState.model', 'progHelp.contro
             if ($.cookie(cookieName)) {
                 GUISTATE.gui.cookie = $.cookie(cookieName);
             }
-            
-            wedo = WEDO.RobotWeDoBehaviour();
+
             GUISTATE.gui.view = 'tabProgram';
             GUISTATE.gui.prevView = 'tabProgram';
             GUISTATE.gui.language = language;
@@ -532,7 +530,7 @@ define([ 'exports', 'util', 'log', 'message', 'guiState.model', 'progHelp.contro
         if (GUISTATE.gui.connection === GUISTATE.gui.connectionType.AGENTORTOKEN) {
             return true;
         }
-        if (GUISTATE.gui.connection === GUISTATE.gui.connectionType.WEBVIEW && wedo.getConnectedBricks().length > 0) {
+        if (GUISTATE.gui.connection === GUISTATE.gui.connectionType.WEBVIEW && WEBVIEW_C.getWeDo().getConnectedBricks().length > 0) {
             return true;
         }
         return false;

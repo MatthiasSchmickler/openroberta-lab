@@ -128,14 +128,23 @@ public class MbedStackMachineVisitor<V> extends AbstractStackMachineVisitor<V> i
 
     @Override
     public V visitPredefinedImage(PredefinedImage<V> predefinedImage) {
-        // TODO Auto-generated method stub
+        final String image = predefinedImage.getImageName().getImageString();
+        final String[] imageArray = image.split("\\\\n");
+        String predefinedImageArray = "createConstant(CONST.IMAGE, [";
+        for ( final String element : imageArray ) {
+            predefinedImageArray += "[";
+            predefinedImageArray += element;
+            predefinedImageArray += "],";
+        }
+        predefinedImageArray += "])";
+        //        this.sb.append(predefinedImageArray);
         return null;
     }
 
     @Override
     public V visitDisplayImageAction(DisplayImageAction<V> displayImageAction) {
         displayImageAction.getValuesToDisplay().visit(this);
-        JSONObject o = mk(C.DISPLAY_IMAGE_ACTION).put(C.MODE, displayImageAction.getDisplayImageMode());
+        JSONObject o = mk(C.SHOW_IMAGE_ACTION).put(C.MODE, displayImageAction.getDisplayImageMode());
         return app(o);
     }
 
