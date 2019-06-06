@@ -386,15 +386,11 @@ define( ['exports', 'simulation.scene', 'simulation.program.eval', 'simulation.m
             for ( var i = 0; i < numRobots; i++ ) {
                 if ( !robots[i].pause && !pause ) {
                     if ( !interpreter.isTerminated() && !reset ) {
-                        if ( runRenderUntil == 0 || runRenderUntil < now ) {
-                            console.log( 'run interpreter' )
-                            runRenderUntil = 0;
-                            interpreter.run( now + 10 );
-                            var robotState = robotBehaviour.getState();
-                            if ( robotState.delayInterpreter != undefined && robotState.delayInterpreter > 0 ) {
-                                runRenderUntil = now + robotState.delayInterpreter;
-                                robotState.delayInterpreter = 0;
-                            }
+                        if (  runRenderUntil <= now ) {
+                            console.log( 'run interpreter' );
+                            var delayMs = interpreter.run( now + 10 );
+                            var nowNext = new Date().getTime()
+                            runRenderUntil = nowNext + delayMs;                            
                         }
                     } else if ( !interpreter.isTerminated() && !robots[i].endless ) {
                         robots[i].pause = true;

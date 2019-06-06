@@ -100,15 +100,15 @@ export class RobotMbedBehaviour extends ARobotBehaviour {
         //        WEBVIEW_C.jsToAppInterface( cmd );
     }
 
-    public showTextAction(text: any) {
+    public showTextAction(text: any): number {
         const showText = "" + text;
         U.debug('***** show "' + showText + '" *****');
         const duration = (showText.length + 1) * 7 * 150;
         this.hardwareState.actions.display = {};
         this.hardwareState.actions.display.text = showText;
-        this.hardwareState.delayInterpreter = duration;
+        return duration;
     }
- 
+
     public getState(): any {
         return this.hardwareState;
     }

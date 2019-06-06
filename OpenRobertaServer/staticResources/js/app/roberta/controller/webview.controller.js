@@ -1,5 +1,5 @@
-define([ 'exports', 'guiState.controller', 'wedo.model', 'interpreter.interpreter', 'util', 'log', 'message', 'blocks', 'jquery' ], function(exports,
-        GUISTATE_C, WEDO_M, WEDO_I, UTIL, LOG, MSG, Blockly, $) {
+define([ 'exports', 'guiState.controller', 'interpreter.interpreter', 'util', 'log', 'message', 'blocks', 'jquery' ], function(exports,
+        GUISTATE_C, WEDO_I, UTIL, LOG, MSG, Blockly, $) {
 
     var ready;
     var aLanguage;
@@ -47,7 +47,7 @@ define([ 'exports', 'guiState.controller', 'wedo.model', 'interpreter.interprete
                     console.log(data);
                 } else if (data.type == "connect" && data.state == "connected") {
                     $('#show-available-connections').trigger('connect', data);
-                    WEDO_M.update(data);
+                    GUISTATE_C.wedo.update(data);
                     GUISTATE_C.setConnectionState("wait");
                     var bricklyWorkspace = GUISTATE_C.getBricklyWorkspace();
                     var blocks = bricklyWorkspace.getAllBlocks();
@@ -63,7 +63,7 @@ define([ 'exports', 'guiState.controller', 'wedo.model', 'interpreter.interprete
                         }
                     }
                 } else if (data.type == "connect" && data.state == "disconnected") {
-                    WEDO_M.update(data);
+                    GUISTATE_C.wedo.update(data);
                     WEDO_I.terminate();
                     var bricklyWorkspace = GUISTATE_C.getBricklyWorkspace();
                     var blocks = bricklyWorkspace.getAllBlocks();
@@ -80,7 +80,7 @@ define([ 'exports', 'guiState.controller', 'wedo.model', 'interpreter.interprete
                     }
                     GUISTATE_C.setConnectionState("error");
                 } else {
-                    WEDO_M.update(data);
+                    GUISTATE_C.wedo.update(data);
                 }
             } else {
                 throw "invalid arguments";

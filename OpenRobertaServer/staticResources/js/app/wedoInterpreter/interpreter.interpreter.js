@@ -26,8 +26,7 @@ define(["require", "exports", "interpreter.state", "interpreter.constants", "int
          * . @param maxRunTime the time stamp at which the run method must have terminated. If 0 run as long as possible.
          */
         Interpreter.prototype.run = function (maxRunTime) {
-            //        this.timeout(() => { this.evalOperation() }, 0 ); // return to caller. Don't block the UI.
-            this.evalOperation(maxRunTime);
+            return this.evalOperation(maxRunTime);
         };
         /**
          * return true, if the program is terminated
@@ -79,17 +78,16 @@ define(["require", "exports", "interpreter.state", "interpreter.constants", "int
          * - push and pop to the stack of operations-arrays
          */
         Interpreter.prototype.evalOperation = function (maxRunTime) {
-            var _this = this;
             var s = this.s;
             var n = this.r;
-            var _loop_1 = function () {
+            topLevelLoop: while (!this.terminated) {
                 if (maxRunTime < new Date().getTime())
-                    return { value: void 0 };
+                    return 0;
                 s.opLog('actual ops: ');
                 var stmt = s.getOp();
                 if (stmt === undefined) {
                     U.debug('PROGRAM TERMINATED. No ops remaining');
-                    return "break-topLevelLoop";
+                    break topLevelLoop;
                 }
                 var opCode = stmt[C.OPCODE];
                 switch (opCode) {
@@ -111,7 +109,7 @@ define(["require", "exports", "interpreter.state", "interpreter.constants", "int
                         break;
                     }
                     case C.EXPR:
-                        this_1.evalExpr(stmt);
+                        this.evalExpr(stmt);
                         break;
                     case C.FLOW_CONTROL: {
                         var conditional = stmt[C.CONDITIONAL];
@@ -164,8 +162,12 @@ define(["require", "exports", "interpreter.state", "interpreter.constants", "int
                         var port_1 = stmt[C.PORT];
                         n.motorOnAction(name_2, port_1, duration, speed);
                         if (duration >= 0) {
-                            this_1.timeout(function () { n.motorStopAction(name_2, port_1); _this.evalOperation(maxRunTime); }, duration);
-                            return { value: void 0 };
+                            var motorStop = {};
+                            motorStop[C.OPCODE] = C.MOTOR_STOP;
+                            motorStop[C.NAME] = name_2;
+                            motorStop[C.PORT] = port_1;
+                            s.push(motorStop);
+                            return duration;
                         }
                         break;
                     }
@@ -174,7 +176,7 @@ define(["require", "exports", "interpreter.state", "interpreter.constants", "int
                         break;
                     }
                     case C.REPEAT_STMT:
-                        this_1.evalRepeat(stmt);
+                        this.evalRepeat(stmt);
                         break;
                     case C.REPEAT_STMT_CONTINUATION:
                         if (stmt[C.MODE] === C.FOR || stmt[C.MODE] === C.TIMES) {
@@ -193,16 +195,15 @@ define(["require", "exports", "interpreter.state", "interpreter.constants", "int
                         }
                         break;
                     case C.SHOW_TEXT_ACTION: {
-                        text = s.pop();
-                        n.showTextAction(text);
-                        return { value: void 0 };
+                        var text = s.pop();
+                        return n.showTextAction(text);
                     }
                     case C.STATUS_LIGHT_ACTION:
                         n.statusLightOffAction(stmt[C.NAME], stmt[C.PORT]);
                         break;
                     case C.STOP:
                         U.debug("PROGRAM TERMINATED. stop op");
-                        return "break-topLevelLoop";
+                        break topLevelLoop;
                     case C.TEXT_JOIN:
                         var second = s.pop();
                         var first = s.pop();
@@ -216,8 +217,7 @@ define(["require", "exports", "interpreter.state", "interpreter.constants", "int
                         var duration = s.pop();
                         var frequency = s.pop();
                         n.toneAction(stmt[C.NAME], frequency, duration);
-                        this_1.timeout(function () { _this.evalOperation(maxRunTime); }, duration);
-                        return { value: void 0 };
+                        return duration;
                     }
                     case C.VAR_DECLARATION: {
                         var name_3 = stmt[C.NAME];
@@ -231,26 +231,17 @@ define(["require", "exports", "interpreter.state", "interpreter.constants", "int
                     }
                     case C.WAIT_TIME_STMT: {
                         var time = s.pop();
-                        this_1.timeout(function () { _this.evalOperation(maxRunTime); }, time);
-                        return { value: void 0 };
+                        return time; // wait for handler being called
                     }
                     default:
                         U.dbcException("invalid stmt op: " + opCode);
-                }
-            };
-            var this_1 = this, text;
-            topLevelLoop: while (!this.terminated) {
-                var state_1 = _loop_1();
-                if (typeof state_1 === "object")
-                    return state_1.value;
-                switch (state_1) {
-                    case "break-topLevelLoop": break topLevelLoop;
                 }
             }
             // termination either requested by the client or by executing 'stop' or after last statement
             this.terminated = true;
             n.close();
             this.callbackOnTermination();
+            return 0;
         };
         /**
          *  called from @see evalOperation() to evaluate all kinds of expressions

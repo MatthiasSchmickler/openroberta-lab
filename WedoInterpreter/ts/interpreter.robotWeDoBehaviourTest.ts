@@ -81,9 +81,10 @@ export class RobotWeDoBehaviourTest extends ARobotBehaviour {
         U.info( robotText + ' motor stop' );
     }
 
-    public showTextAction( text: any ) {
+    public showTextAction( text: any ): number {
         const showText = "" + text;
         U.info( 'show "' + showText + '"' );
+        return 0;
     }
 
     public close() {

@@ -8,7 +8,7 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-define(["require", "exports", "interpreter.aRobotBehaviour", "interpreter.constants", "interpreter.util", "./wedo.model", "./webview.controller"], function (require, exports, interpreter_aRobotBehaviour_1, C, U, WEDO, WEBVIEW_C) {
+define(["require", "exports", "interpreter.aRobotBehaviour", "interpreter.constants", "interpreter.util", "./webview.controller"], function (require, exports, interpreter_aRobotBehaviour_1, C, U, WEBVIEW_C) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var RobotWeDoBehaviour = (function (_super) {
@@ -148,8 +148,8 @@ define(["require", "exports", "interpreter.aRobotBehaviour", "interpreter.consta
                 default:
                     throw 'invalid get sample for ' + name + ' - ' + port + ' - ' + sensor + ' - ' + slot;
             }
-            var brickid = WEDO.getBrickIdByName(name);
-            s.push(WEDO.getSensorValue(brickid, sensorName, port, slot));
+            var brickid = this.getBrickIdByName(name);
+            s.push(this.getSensorValue(brickid, sensorName, port, slot));
         };
         RobotWeDoBehaviour.prototype.timerReset = function (port) {
             this.timers[port] = Date.now();
@@ -166,28 +166,28 @@ define(["require", "exports", "interpreter.aRobotBehaviour", "interpreter.consta
             return delta;
         };
         RobotWeDoBehaviour.prototype.ledOnAction = function (name, port, color) {
-            var brickid = WEDO.getBrickIdByName(name);
+            var brickid = this.getBrickIdByName(name);
             var robotText = 'robot: ' + name + ', port: ' + port;
             U.debug(robotText + ' led on color ' + color);
             var cmd = { 'target': 'wedo', 'type': 'command', 'actuator': 'light', 'brickid': brickid, 'color': color };
             WEBVIEW_C.jsToAppInterface(cmd);
         };
         RobotWeDoBehaviour.prototype.statusLightOffAction = function (name, port) {
-            var brickid = WEDO.getBrickIdByName(name);
+            var brickid = this.getBrickIdByName(name);
             var robotText = 'robot: ' + name + ', port: ' + port;
             U.debug(robotText + ' led off');
             var cmd = { 'target': 'wedo', 'type': 'command', 'actuator': 'light', 'brickid': brickid, 'color': 0 };
             WEBVIEW_C.jsToAppInterface(cmd);
         };
         RobotWeDoBehaviour.prototype.toneAction = function (name, frequency, duration) {
-            var brickid = WEDO.getBrickIdByName(name); // TODO: better style
+            var brickid = this.getBrickIdByName(name); // TODO: better style
             var robotText = 'robot: ' + name;
             U.debug(robotText + ' piezo: ' + ', frequency: ' + frequency + ', duration: ' + duration);
             var cmd = { 'target': 'wedo', 'type': 'command', 'actuator': 'piezo', 'brickid': brickid, 'frequency': frequency, 'duration': duration };
             WEBVIEW_C.jsToAppInterface(cmd);
         };
         RobotWeDoBehaviour.prototype.motorOnAction = function (name, port, duration, speed) {
-            var brickid = WEDO.getBrickIdByName(name); // TODO: better style
+            var brickid = this.getBrickIdByName(name); // TODO: better style
             var robotText = 'robot: ' + name + ', port: ' + port;
             var durText = duration === -1 ? ' w.o. duration' : (' for ' + duration + ' msec');
             U.debug(robotText + ' motor speed ' + speed + durText);
@@ -195,7 +195,7 @@ define(["require", "exports", "interpreter.aRobotBehaviour", "interpreter.consta
             WEBVIEW_C.jsToAppInterface(cmd);
         };
         RobotWeDoBehaviour.prototype.motorStopAction = function (name, port) {
-            var brickid = WEDO.getBrickIdByName(name); // TODO: better style
+            var brickid = this.getBrickIdByName(name); // TODO: better style
             var robotText = 'robot: ' + name + ', port: ' + port;
             U.debug(robotText + ' motor stop');
             var cmd = { 'target': 'wedo', 'type': 'command', 'actuator': 'motor', 'brickid': brickid, 'action': 'stop', 'id': port };
@@ -205,12 +205,13 @@ define(["require", "exports", "interpreter.aRobotBehaviour", "interpreter.consta
             var showText = "" + text;
             U.debug('***** show "' + showText + '" *****');
             WEBVIEW_C.jsToDisplay({ "show": showText });
+            return 0;
         };
         RobotWeDoBehaviour.prototype.close = function () {
-            var ids = WEDO.getConnectedBricks();
+            var ids = this.getConnectedBricks();
             for (var id in ids) {
                 if (ids.hasOwnProperty(id)) {
-                    var name = WEDO.getBrickById(ids[id]).brickname;
+                    var name = this.getBrickById(ids[id]).brickname;
                     this.motorStopAction(name, 1);
                     this.motorStopAction(name, 2);
                     this.ledOnAction(name, 99, 3);

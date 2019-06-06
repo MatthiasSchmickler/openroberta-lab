@@ -103,7 +103,7 @@ define(["require", "exports", "interpreter.aRobotBehaviour", "interpreter.consta
             var duration = (showText.length + 1) * 7 * 150;
             this.hardwareState.actions.display = {};
             this.hardwareState.actions.display.text = showText;
-            this.hardwareState.delayInterpreter = duration;
+            return duration;
         };
         RobotMbedBehaviour.prototype.getState = function () {
             return this.hardwareState;

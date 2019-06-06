@@ -1,6 +1,6 @@
-define([ 'exports', 'util', 'log', 'message', 'program.controller', 'program.model', 'socket.controller', 'guiState.controller', 'webview.controller',
-        'interpreter.interpreter', 'interpreter.robotWeDoBehaviour', 'jquery' ], function(exports, UTIL, LOG, MSG, PROG_C, PROGRAM, SOCKET_C, GUISTATE_C, WEBVIEW_C,
-        WEDO_I, WEDO_R, $) {
+define([ 'exports', 'util', 'log', 'message', 'program.controller', 'program.model', 'socket.controller', 'guiState.controller', 
+        'interpreter.interpreter', 'interpreter.robotWeDoBehaviour', 'jquery' ], function(exports, UTIL, LOG, MSG, PROG_C, PROGRAM, SOCKET_C, GUISTATE_C,
+         WEDO_I, WEDO_R, $) {
 
     var blocklyWorkspace;
     var interpreter;
@@ -174,6 +174,29 @@ define([ 'exports', 'util', 'log', 'message', 'program.controller', 'program.mod
             interpreter.terminate();
         }
     }
+    
+
+    /**
+     * after the duration specified, call the callback function given. The
+     * duration is partitioned into 100 millisec intervals to allow termination
+     * of the running interpreter during a timeout. Be careful: the termination
+     * is NOT effected here, but by the callback function (this should be
+     * 
+     * @see evalOperation() in ALMOST ALL cases) .
+     * @param callback
+     *            called when the time has elapsed .
+     * @param durationInMilliSec
+     *            time that should elapse before the callback is called
+     */
+    function timeout(callback, durationInMilliSec) {
+             if (durationInMilliSec > 100) {
+                 durationInMilliSec -= 100;
+                setTimeout(() => { timeout(callback, durationInMilliSec) }, 100);
+            } else {
+                 setTimeout(() => { callback() }, durationInMilliSec);
+            }
+    }
+    
 
     function runForWebviewConnection(result) {
         if (result.rc === "ok") {
@@ -183,12 +206,21 @@ define([ 'exports', 'util', 'log', 'message', 'program.controller', 'program.mod
             var functionDeclaration = program.functionDeclaration;
             switch (GUISTATE_C.getRobot()) {
             case "wedo":
-                interpreter = new WEDO_I.Interpreter();
+                interpreter = new WEDO_I.Interpreter(program, new WEDO_R.RobotWeDoBehaviour(), callbackOnTermination);
                 if (interpreter !== null) {
                     GUISTATE_C.setConnectionState("busy");
                     blocklyWorkspace.robControls.switchToStop();
+                    var interpreterStep = function() {
+                        while (!interpreter.isTerminated()) {
+                            var delayMs = interpreter.run();
+                            if (delayMs > 0) {
+                                timeout(interpreterStep, delayMs);
+                                return;
+                            }
+                        }
+                    };
                     try {
-                        interpreter.run(program, new WEDO_R.RobotWeDoBehaviour(), callbackOnTermination);
+                        timeout(interpreterStep, 0);
                     } catch (error) {
                         interpreter.terminate();
                         interpreter = null;

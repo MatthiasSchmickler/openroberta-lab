@@ -17,7 +17,7 @@ export class Interpreter {
      * . @param r implementation of the ARobotBehaviour class
      * . @param cbOnTermination is called when the program has terminated
     */
-    constructor( generatedCode: any, r: ARobotBehaviour, cbOnTermination: () => void ) {
+    constructor(generatedCode: any, r: ARobotBehaviour, cbOnTermination: () => void) {
         this.terminated = false;
         this.callbackOnTermination = cbOnTermination;
         const stmts = generatedCode[C.OPS];
@@ -26,8 +26,8 @@ export class Interpreter {
 
         var stop = {};
         stop[C.OPCODE] = "stop";
-        stmts.push( stop );
-        this.s = new State( stmts, functions );
+        stmts.push(stop);
+        this.s = new State(stmts, functions);
 
     }
 
@@ -35,9 +35,8 @@ export class Interpreter {
      * run the operations.
      * . @param maxRunTime the time stamp at which the run method must have terminated. If 0 run as long as possible.
      */
-    public run( maxRunTime: number ): any {
-        //        this.timeout(() => { this.evalOperation() }, 0 ); // return to caller. Don't block the UI.
-        this.evalOperation( maxRunTime );
+    public run(maxRunTime: number): number {
+        return this.evalOperation(maxRunTime);
     }
 
     /**
@@ -91,22 +90,22 @@ export class Interpreter {
      * - push and pop values to the stack (expressions)
      * - push and pop to the stack of operations-arrays
      */
-    private evalOperation( maxRunTime: number ) {
+    private evalOperation(maxRunTime: number): number {
         const s = this.s;
         const n = this.r;
-        topLevelLoop: while ( !this.terminated ) {
-            if (maxRunTime < new Date().getTime()) return;
-            s.opLog( 'actual ops: ' );
+        topLevelLoop: while (!this.terminated) {
+            if (maxRunTime < new Date().getTime()) return 0;
+            s.opLog('actual ops: ');
             let stmt = s.getOp();
-            if ( stmt === undefined ) {
-                U.debug( 'PROGRAM TERMINATED. No ops remaining' );
+            if (stmt === undefined) {
+                U.debug('PROGRAM TERMINATED. No ops remaining');
                 break topLevelLoop;
             }
             const opCode = stmt[C.OPCODE];
-            switch ( opCode ) {
+            switch (opCode) {
                 case C.ASSIGN_STMT: {
                     const name = stmt[C.NAME];
-                    s.setVar( name, s.pop() );
+                    s.setVar(name, s.pop());
                     break;
                 }
                 case C.CLEAR_DISPLAY_ACTION: {
@@ -114,57 +113,57 @@ export class Interpreter {
                     break;
                 }
                 case C.CREATE_DEBUG_ACTION: {
-                    U.debug( 'NYI' );
+                    U.debug('NYI');
                     break;
                 }
                 case C.DRIVE_ACTION: {
-                    U.debug( 'NYI' );
+                    U.debug('NYI');
                     break;
                 }
                 case C.EXPR:
-                    this.evalExpr( stmt );
+                    this.evalExpr(stmt);
                     break;
                 case C.FLOW_CONTROL: {
                     const conditional = stmt[C.CONDITIONAL];
                     const activatedBy: boolean = stmt[C.BOOLEAN] === undefined ? true : stmt[C.BOOLEAN];
-                    const doIt: boolean = conditional ? ( s.pop() === activatedBy ) : true;
-                    if ( doIt ) {
-                        s.popOpsUntil( stmt[C.KIND] );
-                        if ( stmt[C.BREAK] ) {
+                    const doIt: boolean = conditional ? (s.pop() === activatedBy) : true;
+                    if (doIt) {
+                        s.popOpsUntil(stmt[C.KIND]);
+                        if (stmt[C.BREAK]) {
                             s.getOp();
                         }
                     }
                     break;
                 }
                 case C.GET_SAMPLE: {
-                    n.getSample( s, stmt[C.NAME], stmt[C.PORT], stmt[C.GET_SAMPLE], stmt[C.SLOT] )
+                    n.getSample(s, stmt[C.NAME], stmt[C.PORT], stmt[C.GET_SAMPLE], stmt[C.SLOT])
                     break;
                 }
                 case C.IF_STMT:
-                    s.pushOps( stmt[C.STMT_LIST] )
+                    s.pushOps(stmt[C.STMT_LIST])
                     break;
                 case C.IF_TRUE_STMT:
-                    if ( s.pop() ) {
-                        s.pushOps( stmt[C.STMT_LIST] )
+                    if (s.pop()) {
+                        s.pushOps(stmt[C.STMT_LIST])
                     }
                     break;
                 case C.IF_RETURN:
-                    if ( s.pop() ) {
-                        s.pushOps( stmt[C.STMT_LIST] )
+                    if (s.pop()) {
+                        s.pushOps(stmt[C.STMT_LIST])
                     }
                     break;
                 case C.LED_ON_ACTION: {
                     const color = s.pop();
-                    n.ledOnAction( stmt[C.NAME], stmt[C.PORT], color )
+                    n.ledOnAction(stmt[C.NAME], stmt[C.PORT], color)
                     break;
                 }
                 case C.METHOD_CALL_VOID:
                 case C.METHOD_CALL_RETURN: {
-                    for ( let parameterName of stmt[C.NAMES] ) {
-                        s.bindVar( parameterName, s.pop() )
+                    for (let parameterName of stmt[C.NAMES]) {
+                        s.bindVar(parameterName, s.pop())
                     }
-                    const body = s.getFunction( stmt[C.NAME] )[C.STATEMENTS];
-                    s.pushOps( body );
+                    const body = s.getFunction(stmt[C.NAME])[C.STATEMENTS];
+                    s.pushOps(body);
                     break;
                 }
                 case C.MOTOR_ON_ACTION: {
@@ -172,85 +171,88 @@ export class Interpreter {
                     const speed = s.pop();
                     const name = stmt[C.NAME];
                     const port = stmt[C.PORT];
-                    n.motorOnAction( name, port, duration, speed );
-                    if ( duration >= 0 ) {
-                        this.timeout(() => { n.motorStopAction( name, port ); this.evalOperation(maxRunTime) }, duration );
-                        return; // wait for handler being called
+                    n.motorOnAction(name, port, duration, speed);
+                    if (duration >= 0) {
+                        const motorStop = {};
+                        motorStop[C.OPCODE] = C.MOTOR_STOP;
+                        motorStop[C.NAME] = name;
+                        motorStop[C.PORT] = port;
+                        s.push(motorStop);
+
+                        return duration;
                     }
                     break;
                 }
                 case C.MOTOR_STOP: {
-                    n.motorStopAction( stmt[C.NAME], stmt[C.PORT] );
+                    n.motorStopAction(stmt[C.NAME], stmt[C.PORT]);
                     break;
                 }
                 case C.REPEAT_STMT:
-                    this.evalRepeat( stmt );
+                    this.evalRepeat(stmt);
                     break;
                 case C.REPEAT_STMT_CONTINUATION:
-                    if ( stmt[C.MODE] === C.FOR || stmt[C.MODE] === C.TIMES ) {
+                    if (stmt[C.MODE] === C.FOR || stmt[C.MODE] === C.TIMES) {
                         const runVariableName = stmt[C.NAME];
                         const end = s.get1();
                         const incr = s.get0();
-                        const value = s.getVar( runVariableName ) + incr;
-                        if ( +value >= +end ) {
-                            s.popOpsUntil( C.REPEAT_STMT );
+                        const value = s.getVar(runVariableName) + incr;
+                        if (+value >= +end) {
+                            s.popOpsUntil(C.REPEAT_STMT);
                             s.getOp(); // the repeat has terminated
                         } else {
-                            s.setVar( runVariableName, value );
-                            s.pushOps( stmt[C.STMT_LIST] );
+                            s.setVar(runVariableName, value);
+                            s.pushOps(stmt[C.STMT_LIST]);
                         }
                     }
                     break;
                 case C.SHOW_TEXT_ACTION: {
                     var text = s.pop();
-                    n.showTextAction( text );
-                    return;
+                    return n.showTextAction(text);
                 }
                 case C.STATUS_LIGHT_ACTION:
-                    n.statusLightOffAction( stmt[C.NAME], stmt[C.PORT] )
+                    n.statusLightOffAction(stmt[C.NAME], stmt[C.PORT])
                     break;
                 case C.STOP:
-                    U.debug( "PROGRAM TERMINATED. stop op" );
+                    U.debug("PROGRAM TERMINATED. stop op");
                     break topLevelLoop;
                 case C.TEXT_JOIN:
                     const second = s.pop();
                     const first = s.pop();
-                    s.push( '' + first + second );
+                    s.push('' + first + second);
                     break;
                 case C.TIMER_SENSOR_RESET:
                     const port = stmt[C.PORT];
-                    n.timerReset( port );
+                    n.timerReset(port);
                     break;
                 case C.TONE_ACTION: {
                     const duration = s.pop();
                     const frequency = s.pop();
-                    n.toneAction( stmt[C.NAME], frequency, duration );
-                    this.timeout(() => { this.evalOperation(maxRunTime) }, duration );
-                    return; // wait for handler being called
+                    n.toneAction(stmt[C.NAME], frequency, duration);
+                    return duration;
                 }
                 case C.VAR_DECLARATION: {
                     const name = stmt[C.NAME];
-                    s.bindVar( name, s.pop() );
+                    s.bindVar(name, s.pop());
                     break;
                 }
                 case C.WAIT_STMT: {
-                    U.debug( 'waitstmt started' );
-                    s.pushOps( stmt[C.STMT_LIST] );
+                    U.debug('waitstmt started');
+                    s.pushOps(stmt[C.STMT_LIST]);
                     break;
                 }
                 case C.WAIT_TIME_STMT: {
                     const time = s.pop();
-                    this.timeout(() => { this.evalOperation(maxRunTime) }, time );
-                    return; // wait for handler being called
+                    return time; // wait for handler being called
                 }
                 default:
-                    U.dbcException( "invalid stmt op: " + opCode );
+                    U.dbcException("invalid stmt op: " + opCode);
             }
         }
         // termination either requested by the client or by executing 'stop' or after last statement
         this.terminated = true;
         n.close();
         this.callbackOnTermination();
+        return 0;
     }
 
     /**
@@ -258,58 +260,58 @@ export class Interpreter {
      *  
      * . @param expr to be evaluated
      */
-    private evalExpr( expr ) {
+    private evalExpr(expr) {
         const kind = expr[C.EXPR];
         const s = this.s;
-        switch ( kind ) {
+        switch (kind) {
             case C.VAR:
-                s.push( s.getVar( expr[C.NAME] ) );
+                s.push(s.getVar(expr[C.NAME]));
                 break;
             case C.NUM_CONST:
-                s.push( +expr[C.VALUE] );
+                s.push(+expr[C.VALUE]);
                 break;
             case C.BOOL_CONST:
-                s.push( expr[C.VALUE] );
+                s.push(expr[C.VALUE]);
                 break;
             case C.STRING_CONST:
-                s.push( expr[C.VALUE] );
+                s.push(expr[C.VALUE]);
                 break;
             case C.COLOR_CONST:
-                s.push( expr[C.VALUE] );
+                s.push(expr[C.VALUE]);
                 break;
             case C.UNARY: {
                 const subOp = expr[C.OP];
-                switch ( subOp ) {
+                switch (subOp) {
                     case C.NOT:
                         var truthy;
                         const bool = s.pop();
-                        if ( bool === 'true' ) {
+                        if (bool === 'true') {
                             truthy = true;
-                        } else if ( bool === 'false' || bool === '0' || bool === '' ) {
+                        } else if (bool === 'false' || bool === '0' || bool === '') {
                             truthy = false;
                         } else {
                             truthy = !!bool
                         }
-                        s.push( !truthy );
+                        s.push(!truthy);
                         break;
                     case C.NEG:
                         const value = s.pop();
-                        s.push( -value );
+                        s.push(-value);
                         break;
                     default:
-                        U.dbcException( "invalid unary expr subOp: " + subOp );
+                        U.dbcException("invalid unary expr subOp: " + subOp);
                 }
                 break;
             }
             case C.MATH_CONST: {
                 const value = expr[C.VALUE];
-                switch ( value ) {
-                    case 'PI': s.push( Math.PI ); break;
-                    case 'E': s.push( Math.E ); break;
-                    case 'GOLDEN_RATIO': s.push(( 1.0 + Math.sqrt( 5.0 ) ) / 2.0 ); break;
-                    case 'SQRT2': s.push( Math.SQRT2 ); break;
-                    case 'SQRT1_2': s.push( Math.SQRT1_2 ); break;
-                    case 'INFINITY': s.push( Infinity ); break;
+                switch (value) {
+                    case 'PI': s.push(Math.PI); break;
+                    case 'E': s.push(Math.E); break;
+                    case 'GOLDEN_RATIO': s.push((1.0 + Math.sqrt(5.0)) / 2.0); break;
+                    case 'SQRT2': s.push(Math.SQRT2); break;
+                    case 'SQRT1_2': s.push(Math.SQRT1_2); break;
+                    case 'INFINITY': s.push(Infinity); break;
                     default:
                         throw "Invalid Math Constant Name";
                 }
@@ -318,23 +320,23 @@ export class Interpreter {
             case C.SINGLE_FUNCTION: {
                 const subOp = expr[C.OP];
                 const value = s.pop();
-                U.debug( '---------- ' + subOp + ' with ' + value )
-                switch ( subOp ) {
-                    case 'ROOT': s.push( Math.sqrt( value ) ); break;
-                    case 'ABS': s.push( Math.abs( value ) ); break;
-                    case 'LN': s.push( Math.log( value ) ); break;
-                    case 'LOG10': s.push( Math.log( value ) / Math.LN10 ); break;
-                    case 'EXP': s.push( Math.exp( value ) ); break;
-                    case 'POW10': s.push( Math.pow( 10, value ) ); break;
-                    case 'SIN': s.push( Math.sin( value ) ); break;
-                    case 'COS': s.push( Math.cos( value ) ); break;
-                    case 'TAN': s.push( Math.tan( value ) ); break;
-                    case 'ASIN': s.push( Math.asin( value ) ); break;
-                    case 'ATAN': s.push( Math.atan( value ) ); break;
-                    case 'ACOS': s.push( Math.acos( value ) ); break;
-                    case 'ROUND': s.push( Math.round( value ) ); break;
-                    case 'ROUNDUP': s.push( Math.ceil( value ) ); break;
-                    case 'ROUNDDOWN': s.push( Math.floor( value ) ); break;
+                U.debug('---------- ' + subOp + ' with ' + value)
+                switch (subOp) {
+                    case 'ROOT': s.push(Math.sqrt(value)); break;
+                    case 'ABS': s.push(Math.abs(value)); break;
+                    case 'LN': s.push(Math.log(value)); break;
+                    case 'LOG10': s.push(Math.log(value) / Math.LN10); break;
+                    case 'EXP': s.push(Math.exp(value)); break;
+                    case 'POW10': s.push(Math.pow(10, value)); break;
+                    case 'SIN': s.push(Math.sin(value)); break;
+                    case 'COS': s.push(Math.cos(value)); break;
+                    case 'TAN': s.push(Math.tan(value)); break;
+                    case 'ASIN': s.push(Math.asin(value)); break;
+                    case 'ATAN': s.push(Math.atan(value)); break;
+                    case 'ACOS': s.push(Math.acos(value)); break;
+                    case 'ROUND': s.push(Math.round(value)); break;
+                    case 'ROUNDUP': s.push(Math.ceil(value)); break;
+                    case 'ROUNDDOWN': s.push(Math.floor(value)); break;
                     default:
                         throw "Invalid Function Name";
                 }
@@ -344,34 +346,34 @@ export class Interpreter {
                 const max = s.pop();
                 const min = s.pop();
                 const value = s.pop();
-                s.push( Math.min( Math.max( value, min ), max ) );
+                s.push(Math.min(Math.max(value, min), max));
                 break;
             }
             case C.RANDOM_INT: {
                 var max = s.pop();
                 var min = s.pop();
-                if ( min > max ) {
+                if (min > max) {
                     [min, max] = [max, min];
                 }
-                s.push( Math.floor( Math.random() * ( max - min + 1 ) + min ) );
+                s.push(Math.floor(Math.random() * (max - min + 1) + min));
                 break;
             }
             case C.RANDOM_DOUBLE:
-                s.push( Math.random() );
+                s.push(Math.random());
                 break;
             case C.MATH_PROP_FUNCT: {
                 const subOp = expr[C.OP];
                 const value = s.pop();
-                switch ( subOp ) {
-                    case 'EVEN': s.push( value % 2 === 0 ); break;
-                    case 'ODD': s.push( value % 2 !== 0 ); break;
-                    case 'PRIME': s.push( this.isPrime( value ) ); break;
-                    case 'WHOLE': s.push( Number( value ) === value && value % 1 === 0 ); break;
-                    case 'POSITIVE': s.push( value >= 0 ); break;
-                    case 'NEGATIVE': s.push( value < 0 ); break;
+                switch (subOp) {
+                    case 'EVEN': s.push(value % 2 === 0); break;
+                    case 'ODD': s.push(value % 2 !== 0); break;
+                    case 'PRIME': s.push(this.isPrime(value)); break;
+                    case 'WHOLE': s.push(Number(value) === value && value % 1 === 0); break;
+                    case 'POSITIVE': s.push(value >= 0); break;
+                    case 'NEGATIVE': s.push(value < 0); break;
                     case 'DIVISIBLE_BY':
                         const first = s.pop();
-                        s.push( first % value === 0 ); break;
+                        s.push(first % value === 0); break;
                     default:
                         throw "Invalid Math Property Function Name";
                 }
@@ -381,28 +383,28 @@ export class Interpreter {
                 const subOp = expr[C.OP];
                 const right = s.pop();
                 const left = s.pop();
-                switch ( subOp ) {
-                    case C.EQ: s.push( left == right ); break;
-                    case C.NEQ: s.push( left !== right ); break;
-                    case C.LT: s.push( left < right ); break;
-                    case C.LTE: s.push( left <= right ); break;
-                    case C.GT: s.push( left > right ); break;
-                    case C.GTE: s.push( left >= right ); break;
-                    case C.AND: s.push( left && right ); break;
-                    case C.OR: s.push( left || right ); break;
-                    case C.ADD: s.push( 0 + left + right ); break;
-                    case C.MINUS: s.push( 0 + left - right ); break;
-                    case C.MULTIPLY: s.push( 0 + left * right ); break;
-                    case C.DIVIDE: s.push( 0 + left / right ); break;
-                    case C.POWER: s.push( Math.pow( left, right ) ); break;
-                    case C.MOD: s.push( left % right ); break;
+                switch (subOp) {
+                    case C.EQ: s.push(left == right); break;
+                    case C.NEQ: s.push(left !== right); break;
+                    case C.LT: s.push(left < right); break;
+                    case C.LTE: s.push(left <= right); break;
+                    case C.GT: s.push(left > right); break;
+                    case C.GTE: s.push(left >= right); break;
+                    case C.AND: s.push(left && right); break;
+                    case C.OR: s.push(left || right); break;
+                    case C.ADD: s.push(0 + left + right); break;
+                    case C.MINUS: s.push(0 + left - right); break;
+                    case C.MULTIPLY: s.push(0 + left * right); break;
+                    case C.DIVIDE: s.push(0 + left / right); break;
+                    case C.POWER: s.push(Math.pow(left, right)); break;
+                    case C.MOD: s.push(left % right); break;
                     default:
-                        U.dbcException( "invalid binary expr supOp: " + subOp );
+                        U.dbcException("invalid binary expr supOp: " + subOp);
                 }
                 break;
             }
             default:
-                U.dbcException( "invalid expr op: " + kind );
+                U.dbcException("invalid expr op: " + kind);
         }
     }
 
@@ -421,38 +423,38 @@ export class Interpreter {
      * 
      * . @param stmt the repeat statement
      */
-    private evalRepeat( stmt: any ) {
+    private evalRepeat(stmt: any) {
         const s = this.s;
         const mode = stmt[C.MODE];
         const contl: any[] = stmt[C.STMT_LIST];
-        if ( contl.length !== 1 || contl[0][C.OPCODE] !== C.REPEAT_STMT_CONTINUATION ) {
-            U.dbcException( "repeat expects an embedded continuation statement" );
+        if (contl.length !== 1 || contl[0][C.OPCODE] !== C.REPEAT_STMT_CONTINUATION) {
+            U.dbcException("repeat expects an embedded continuation statement");
         }
         const cont = contl[0];
-        switch ( mode ) {
+        switch (mode) {
             case C.FOREVER:
             case C.UNTIL:
             case C.WHILE:
-                s.pushOps( contl ); s.getOp(); // pseudo execution. Init is already done. Continuation is for termination only.
-                s.pushOps( cont[C.STMT_LIST] );
+                s.pushOps(contl); s.getOp(); // pseudo execution. Init is already done. Continuation is for termination only.
+                s.pushOps(cont[C.STMT_LIST]);
                 break;
             case C.TIMES:
             case C.FOR: {
                 const runVariableName = stmt[C.NAME];
                 const start = s.get2();
                 const end = s.get1();
-                if ( +start >= +end ) {
+                if (+start >= +end) {
                     s.pop(); s.pop(); s.pop();
                 } else {
-                    s.bindVar( runVariableName, start );
-                    s.pushOps( contl ); s.getOp(); // pseudo excution. Init is already done. Continuation is for termination only.
-                    s.pushOps( cont[C.STMT_LIST] );
+                    s.bindVar(runVariableName, start);
+                    s.pushOps(contl); s.getOp(); // pseudo excution. Init is already done. Continuation is for termination only.
+                    s.pushOps(cont[C.STMT_LIST]);
                     break;
                 }
                 break;
             }
             default:
-                U.dbcException( "invalid repeat mode: " + mode );
+                U.dbcException("invalid repeat mode: " + mode);
         }
     }
 
@@ -461,12 +463,12 @@ export class Interpreter {
      * 
      * . @param n to be checked for primality
      */
-    private isPrime( n: number ) {
-        if ( n < 2 ) { return false; }
-        if ( n === 2 ) { return true; }
-        if ( n % 2 === 0 ) { return false; }
-        for ( let i = 3, s = Math.sqrt( n ); i <= s; i += 2 ) {
-            if ( n % i === 0 ) { return false; }
+    private isPrime(n: number) {
+        if (n < 2) { return false; }
+        if (n === 2) { return true; }
+        if (n % 2 === 0) { return false; }
+        for (let i = 3, s = Math.sqrt(n); i <= s; i += 2) {
+            if (n % i === 0) { return false; }
         }
         return true;
     }
@@ -479,17 +481,17 @@ export class Interpreter {
      * 
      * . @param durationInMilliSec time that should elapse before the callback is called
      */
-    private timeout( callback: () => void, durationInMilliSec: number ) {
-        if ( this.terminated ) {
+    private timeout(callback: () => void, durationInMilliSec: number) {
+        if (this.terminated) {
             callback();
         } else
-            if ( durationInMilliSec > 100 ) {
+            if (durationInMilliSec > 100) {
                 // U.p( 'waiting for 100 msec from ' + durationInMilliSec + ' msec' );
                 durationInMilliSec -= 100;
-                setTimeout(() => { this.timeout( callback, durationInMilliSec ) }, 100 );
+                setTimeout(() => { this.timeout(callback, durationInMilliSec) }, 100);
             } else {
                 // U.p( 'waiting for ' + durationInMilliSec + ' msec' );
-                setTimeout(() => { callback() }, durationInMilliSec );
+                setTimeout(() => { callback() }, durationInMilliSec);
             }
     }
 }

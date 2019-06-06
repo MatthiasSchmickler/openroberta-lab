@@ -81,6 +81,7 @@ define(["require", "exports", "interpreter.aRobotBehaviour", "interpreter.consta
         RobotWeDoBehaviourTest.prototype.showTextAction = function (text) {
             var showText = "" + text;
             U.info('show "' + showText + '"');
+            return 0;
         };
         RobotWeDoBehaviourTest.prototype.close = function () {
             // CI implementation. No real robot. No motor off, etc.
