@@ -5,7 +5,7 @@ define( ['exports', 'guiState.controller', 'interpreter.interpreter', 'interpret
     var aLanguage;
     var webViewType;
     var interpreter;
-    var wedo;
+    var wedo = WEDO_R.RobotWeDoBehaviour();
     /**
      * Init webview
      */
@@ -23,7 +23,6 @@ define( ['exports', 'guiState.controller', 'interpreter.interpreter', 'interpret
             // Obviously not in an Open Roberta webview
             ready.resolve( language );
         }
-        wedo = WEDO_R.RobotWeDoBehaviour();
         return ready.promise();
     }
     exports.init = init;
