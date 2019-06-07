@@ -20,6 +20,7 @@ define( ['exports', 'guiState.controller', 'interpreter.interpreter', 'interpret
             webViewType = "Android";
         } else if ( tryIOS( a ) ) {
             webViewType = "IOS";
+            console.log("IOS: " + wedo.update.toString())
         } else {
             // Obviously not in an Open Roberta webview
             ready.resolve( language );
