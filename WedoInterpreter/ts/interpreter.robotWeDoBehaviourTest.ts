@@ -87,6 +87,11 @@ export class RobotWeDoBehaviourTest extends ARobotBehaviour {
         return 0;
     }
 
+    public showImageAction( _1: any, _2: string ): number {
+        U.info( 'show image NYI' );
+        return 0;
+    }
+
     public close() {
         // CI implementation. No real robot. No motor off, etc.
     }

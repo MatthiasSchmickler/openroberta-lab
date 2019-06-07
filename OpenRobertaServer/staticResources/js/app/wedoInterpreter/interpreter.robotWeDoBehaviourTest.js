@@ -83,6 +83,10 @@ define(["require", "exports", "interpreter.aRobotBehaviour", "interpreter.consta
             U.info('show "' + showText + '"');
             return 0;
         };
+        RobotWeDoBehaviourTest.prototype.showImageAction = function (_1, _2) {
+            U.info('show image NYI');
+            return 0;
+        };
         RobotWeDoBehaviourTest.prototype.close = function () {
             // CI implementation. No real robot. No motor off, etc.
         };

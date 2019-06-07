@@ -33,6 +33,7 @@ export class RobotWeDoBehaviour extends ARobotBehaviour {
 
 
     public update( data ) {
+        U.info( 'update ' + data );
         if ( data.target !== "wedo" ) {
             return;
         }
@@ -135,6 +136,7 @@ export class RobotWeDoBehaviour extends ARobotBehaviour {
     public getSample( s: State, name: string, port: number, sensor: string, slot: string ) {
         var robotText = 'robot: ' + name + ', port: ' + port;
         U.info( robotText + ' getsample from ' + sensor );
+        U.info( ' state ' + this.wedo );
         var sensorName;
         switch ( sensor ) {
             case "infrared":

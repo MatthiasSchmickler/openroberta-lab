@@ -31,6 +31,7 @@ define(["require", "exports", "interpreter.aRobotBehaviour", "interpreter.consta
             return _this;
         }
         RobotWeDoBehaviour.prototype.update = function (data) {
+            U.info('update ' + data);
             if (data.target !== "wedo") {
                 return;
             }
@@ -133,6 +134,7 @@ define(["require", "exports", "interpreter.aRobotBehaviour", "interpreter.consta
         RobotWeDoBehaviour.prototype.getSample = function (s, name, port, sensor, slot) {
             var robotText = 'robot: ' + name + ', port: ' + port;
             U.info(robotText + ' getsample from ' + sensor);
+            U.info(' state ' + this.wedo);
             var sensorName;
             switch (sensor) {
                 case "infrared":
