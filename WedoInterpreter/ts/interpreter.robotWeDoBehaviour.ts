@@ -28,7 +28,7 @@ export class RobotWeDoBehaviour extends ARobotBehaviour {
         this.timers = {};
         this.timers['start'] = Date.now();
 
-        U.loggingEnabled( false, false );
+        U.loggingEnabled( true, true );
     }
 
 

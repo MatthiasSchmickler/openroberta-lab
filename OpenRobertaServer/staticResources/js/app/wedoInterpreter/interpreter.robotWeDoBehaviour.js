@@ -27,7 +27,7 @@ define(["require", "exports", "interpreter.aRobotBehaviour", "interpreter.consta
             _this.toDisplayFct = toDisplayFct;
             _this.timers = {};
             _this.timers['start'] = Date.now();
-            U.loggingEnabled(false, false);
+            U.loggingEnabled(true, true);
             return _this;
         }
         RobotWeDoBehaviour.prototype.update = function (data) {
