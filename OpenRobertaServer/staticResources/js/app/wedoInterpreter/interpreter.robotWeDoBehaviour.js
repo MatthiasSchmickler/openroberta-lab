@@ -8,12 +8,12 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-define(["require", "exports", "interpreter.aRobotBehaviour", "interpreter.constants", "interpreter.util", "./webview.controller"], function (require, exports, interpreter_aRobotBehaviour_1, C, U, WEBVIEW_C) {
+define(["require", "exports", "interpreter.aRobotBehaviour", "interpreter.constants", "interpreter.util"], function (require, exports, interpreter_aRobotBehaviour_1, C, U) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var RobotWeDoBehaviour = (function (_super) {
         __extends(RobotWeDoBehaviour, _super);
-        function RobotWeDoBehaviour() {
+        function RobotWeDoBehaviour(btInterfaceFct, toDisplayFct) {
             var _this = _super.call(this) || this;
             _this.wedo = {};
             _this.tiltMode = {
@@ -23,6 +23,8 @@ define(["require", "exports", "interpreter.aRobotBehaviour", "interpreter.consta
                 FRONT: '7.0',
                 NO: '0.0'
             };
+            _this.btInterfaceFct = btInterfaceFct;
+            _this.toDisplayFct = toDisplayFct;
             _this.timers = {};
             _this.timers['start'] = Date.now();
             U.loggingEnabled(false, false);
@@ -126,7 +128,7 @@ define(["require", "exports", "interpreter.aRobotBehaviour", "interpreter.consta
         };
         RobotWeDoBehaviour.prototype.clearDisplay = function () {
             U.debug('clear display');
-            WEBVIEW_C.jsToDisplay({ "clear": true });
+            this.toDisplayFct({ "clear": true });
         };
         RobotWeDoBehaviour.prototype.getSample = function (s, name, port, sensor, slot) {
             var robotText = 'robot: ' + name + ', port: ' + port;
@@ -170,21 +172,21 @@ define(["require", "exports", "interpreter.aRobotBehaviour", "interpreter.consta
             var robotText = 'robot: ' + name + ', port: ' + port;
             U.debug(robotText + ' led on color ' + color);
             var cmd = { 'target': 'wedo', 'type': 'command', 'actuator': 'light', 'brickid': brickid, 'color': color };
-            WEBVIEW_C.jsToAppInterface(cmd);
+            this.btInterfaceFct(cmd);
         };
         RobotWeDoBehaviour.prototype.statusLightOffAction = function (name, port) {
             var brickid = this.getBrickIdByName(name);
             var robotText = 'robot: ' + name + ', port: ' + port;
             U.debug(robotText + ' led off');
             var cmd = { 'target': 'wedo', 'type': 'command', 'actuator': 'light', 'brickid': brickid, 'color': 0 };
-            WEBVIEW_C.jsToAppInterface(cmd);
+            this.btInterfaceFct(cmd);
         };
         RobotWeDoBehaviour.prototype.toneAction = function (name, frequency, duration) {
             var brickid = this.getBrickIdByName(name); // TODO: better style
             var robotText = 'robot: ' + name;
             U.debug(robotText + ' piezo: ' + ', frequency: ' + frequency + ', duration: ' + duration);
             var cmd = { 'target': 'wedo', 'type': 'command', 'actuator': 'piezo', 'brickid': brickid, 'frequency': frequency, 'duration': duration };
-            WEBVIEW_C.jsToAppInterface(cmd);
+            this.btInterfaceFct(cmd);
         };
         RobotWeDoBehaviour.prototype.motorOnAction = function (name, port, duration, speed) {
             var brickid = this.getBrickIdByName(name); // TODO: better style
@@ -192,19 +194,23 @@ define(["require", "exports", "interpreter.aRobotBehaviour", "interpreter.consta
             var durText = duration === -1 ? ' w.o. duration' : (' for ' + duration + ' msec');
             U.debug(robotText + ' motor speed ' + speed + durText);
             var cmd = { 'target': 'wedo', 'type': 'command', 'actuator': 'motor', 'brickid': brickid, 'action': 'on', 'id': port, 'direction': speed < 0 ? 1 : 0, 'power': Math.abs(speed) };
-            WEBVIEW_C.jsToAppInterface(cmd);
+            this.btInterfaceFct(cmd);
         };
         RobotWeDoBehaviour.prototype.motorStopAction = function (name, port) {
             var brickid = this.getBrickIdByName(name); // TODO: better style
             var robotText = 'robot: ' + name + ', port: ' + port;
             U.debug(robotText + ' motor stop');
             var cmd = { 'target': 'wedo', 'type': 'command', 'actuator': 'motor', 'brickid': brickid, 'action': 'stop', 'id': port };
-            WEBVIEW_C.jsToAppInterface(cmd);
+            this.btInterfaceFct(cmd);
         };
         RobotWeDoBehaviour.prototype.showTextAction = function (text) {
             var showText = "" + text;
             U.debug('***** show "' + showText + '" *****');
-            WEBVIEW_C.jsToDisplay({ "show": showText });
+            this.toDisplayFct({ "show": showText });
+            return 0;
+        };
+        RobotWeDoBehaviour.prototype.showImageAction = function (_text, _mode) {
+            U.debug('***** show image not supported by WeDo *****');
             return 0;
         };
         RobotWeDoBehaviour.prototype.close = function () {

@@ -5,7 +5,8 @@ define( ['exports', 'guiState.controller', 'interpreter.interpreter', 'interpret
     var aLanguage;
     var webViewType;
     var interpreter;
-    var wedo = new WEDO_R.RobotWeDoBehaviour();
+    var wedo = new WEDO_R.RobotWeDoBehaviour(jsToAppInterface, jsToDisplay);
+    
     /**
      * Init webview
      */
