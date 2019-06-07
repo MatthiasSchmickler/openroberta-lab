@@ -87,7 +87,7 @@ define(["require", "exports", "interpreter.aRobotBehaviour", "interpreter.consta
                     // TODO think about what could happen here.
                     break;
             }
-            console.log(this.wedo);
+            U.info(this.wedo);
         };
         RobotWeDoBehaviour.prototype.getSensorValue = function (brickid, sensor, id, slot) {
             switch (sensor) {
@@ -132,7 +132,7 @@ define(["require", "exports", "interpreter.aRobotBehaviour", "interpreter.consta
         };
         RobotWeDoBehaviour.prototype.getSample = function (s, name, port, sensor, slot) {
             var robotText = 'robot: ' + name + ', port: ' + port;
-            U.debug(robotText + ' getsample from ' + sensor);
+            U.info(robotText + ' getsample from ' + sensor);
             var sensorName;
             switch (sensor) {
                 case "infrared":

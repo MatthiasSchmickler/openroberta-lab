@@ -82,7 +82,7 @@ export class RobotWeDoBehaviour extends ARobotBehaviour {
                 // TODO think about what could happen here.
                 break;
         }
-        console.log( this.wedo );
+        U.info( this.wedo );
     }
 
 
@@ -109,7 +109,6 @@ export class RobotWeDoBehaviour extends ARobotBehaviour {
             }
         }
         return brickids;
-
     }
 
 
@@ -124,12 +123,9 @@ export class RobotWeDoBehaviour extends ARobotBehaviour {
         return null;
     }
 
-
     public getBrickById( id ) {
         return this.wedo[id];
     }
-
-
 
     public clearDisplay() {
         U.debug( 'clear display' );
@@ -138,7 +134,7 @@ export class RobotWeDoBehaviour extends ARobotBehaviour {
 
     public getSample( s: State, name: string, port: number, sensor: string, slot: string ) {
         var robotText = 'robot: ' + name + ', port: ' + port;
-        U.debug( robotText + ' getsample from ' + sensor );
+        U.info( robotText + ' getsample from ' + sensor );
         var sensorName;
         switch ( sensor ) {
             case "infrared":
