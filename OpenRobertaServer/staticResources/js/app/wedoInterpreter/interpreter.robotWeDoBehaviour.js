@@ -48,20 +48,21 @@ define(["require", "exports", "interpreter.aRobotBehaviour", "interpreter.consta
                     }
                     break;
                 case "didAddService":
+                    var theWedo = this.wedo[data.brickid];
                     if (data.state == "connected") {
                         if (data.id && data.sensor) {
-                            this.wedo[data.brickid][data.id] = {};
-                            this.wedo[data.brickid][data.id][data.sensor.replace(/\s/g, '').toLowerCase()] = '';
+                            theWedo[data.id] = {};
+                            theWedo[data.id][this.finalName(data.sensor)] = '';
                         }
                         else if (data.id && data.actuator) {
-                            this.wedo[data.brickid][data.id] = {};
-                            this.wedo[data.brickid][data.id][data.actuator.replace(/\s/g, '').toLowerCase()] = '';
+                            theWedo[data.id] = {};
+                            theWedo[data.id][this.finalName(data.actuator)] = '';
                         }
                         else if (data.sensor) {
-                            this.wedo[data.brickid][data.sensor.replace(/\s/g, '').toLowerCase()] = '';
+                            theWedo[this.finalName(data.sensor)] = '';
                         }
                         else {
-                            this.wedo[data.brickid][data.actuator.replace(/\s/g, '').toLowerCase()] = '';
+                            theWedo[this.finalName(data.actuator)] = '';
                         }
                     }
                     break;
@@ -70,18 +71,19 @@ define(["require", "exports", "interpreter.aRobotBehaviour", "interpreter.consta
                         delete this.wedo[data.brickid][data.id];
                     }
                     else if (data.sensor) {
-                        delete this.wedo[data.brickid][data.sensor.replace(/\s/g, '').toLowerCase()];
+                        delete this.wedo[data.brickid][this.finalName(data.sensor)];
                     }
                     else {
-                        delete this.wedo[data.brickid][data.actuator.replace(/\s/g, '').toLowerCase()];
+                        delete this.wedo[data.brickid][this.finalName(data.actuator)];
                     }
                     break;
                 case "update":
+                    var theWedo = this.wedo[data.brickid];
                     if (data.id) {
-                        this.wedo[data.brickid][data.id][data.sensor.replace(/\s/g, '').toLowerCase()] = data.state;
+                        theWedo[data.id][this.finalName(data.sensor)] = data.state;
                     }
                     else {
-                        this.wedo[data.brickid][data.sensor.replace(/\s/g, '').toLowerCase()] = data.state;
+                        theWedo[this.finalName(data.sensor)] = data.state;
                     }
                     break;
                 default:
@@ -91,18 +93,30 @@ define(["require", "exports", "interpreter.aRobotBehaviour", "interpreter.consta
             U.info(this.wedo);
         };
         RobotWeDoBehaviour.prototype.getSensorValue = function (brickid, sensor, id, slot) {
+            var theWedo = this.wedo[brickid];
+            var theWedoId = theWedo === undefined ? "undefined" : theWedo[id];
+            var theWedoSensor = theWedoId === undefined ? "undefined" : theWedoId[sensor];
             switch (sensor) {
                 case "tiltsensor":
                     if (slot === "ANY") {
-                        return this.wedo[brickid][id][sensor] !== this.tiltMode.NO;
+                        return theWedoSensor !== this.tiltMode.NO;
                     }
                     else {
-                        return this.wedo[brickid][id][sensor] === this.tiltMode[slot];
+                        return theWedoSensor === this.tiltMode[slot];
                     }
                 case "motionsensor":
-                    return parseInt(this.wedo[brickid][id][sensor]);
+                    return parseInt(theWedoSensor);
                 case "button":
-                    return this.wedo[brickid][sensor] === "true";
+                    return theWedoSensor === "true";
+            }
+        };
+        RobotWeDoBehaviour.prototype.finalName = function (notNormalized) {
+            if (notNormalized !== undefined) {
+                return notNormalized.replace(/\s/g, '').toLowerCase();
+            }
+            else {
+                U.info("sensor name undefined or null");
+                return "undefined";
             }
         };
         RobotWeDoBehaviour.prototype.getConnectedBricks = function () {

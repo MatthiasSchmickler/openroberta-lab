@@ -31,7 +31,6 @@ export class RobotWeDoBehaviour extends ARobotBehaviour {
         U.loggingEnabled( true, true );
     }
 
-
     public update( data ) {
         U.info( 'update ' + data );
         if ( data.target !== "wedo" ) {
@@ -49,17 +48,18 @@ export class RobotWeDoBehaviour extends ARobotBehaviour {
                 }
                 break;
             case "didAddService":
+                let theWedo = this.wedo[data.brickid];
                 if ( data.state == "connected" ) {
                     if ( data.id && data.sensor ) {
-                        this.wedo[data.brickid][data.id] = {};
-                        this.wedo[data.brickid][data.id][data.sensor.replace( /\s/g, '' ).toLowerCase()] = '';
+                        theWedo[data.id] = {};
+                        theWedo[data.id][this.finalName( data.sensor )] = '';
                     } else if ( data.id && data.actuator ) {
-                        this.wedo[data.brickid][data.id] = {};
-                        this.wedo[data.brickid][data.id][data.actuator.replace( /\s/g, '' ).toLowerCase()] = '';
+                        theWedo[data.id] = {};
+                        theWedo[data.id][this.finalName( data.actuator )] = '';
                     } else if ( data.sensor ) {
-                        this.wedo[data.brickid][data.sensor.replace( /\s/g, '' ).toLowerCase()] = '';
+                        theWedo[this.finalName( data.sensor )] = '';
                     } else {
-                        this.wedo[data.brickid][data.actuator.replace( /\s/g, '' ).toLowerCase()] = '';
+                        theWedo[this.finalName( data.actuator )] = '';
                     }
                 }
                 break;
@@ -67,16 +67,17 @@ export class RobotWeDoBehaviour extends ARobotBehaviour {
                 if ( data.id ) {
                     delete this.wedo[data.brickid][data.id];
                 } else if ( data.sensor ) {
-                    delete this.wedo[data.brickid][data.sensor.replace( /\s/g, '' ).toLowerCase()]
+                    delete this.wedo[data.brickid][this.finalName( data.sensor )]
                 } else {
-                    delete this.wedo[data.brickid][data.actuator.replace( /\s/g, '' ).toLowerCase()]
+                    delete this.wedo[data.brickid][this.finalName( data.actuator )]
                 }
                 break;
             case "update":
+                let theWedo = this.wedo[data.brickid];
                 if ( data.id ) {
-                    this.wedo[data.brickid][data.id][data.sensor.replace( /\s/g, '' ).toLowerCase()] = data.state;
+                    theWedo[data.id][this.finalName( data.sensor )] = data.state;
                 } else {
-                    this.wedo[data.brickid][data.sensor.replace( /\s/g, '' ).toLowerCase()] = data.state;
+                    theWedo[this.finalName( data.sensor )] = data.state;
                 }
                 break;
             default:
@@ -86,19 +87,30 @@ export class RobotWeDoBehaviour extends ARobotBehaviour {
         U.info( this.wedo );
     }
 
-
     public getSensorValue( brickid, sensor, id, slot ) {
+        let theWedo = this.wedo[brickid];
+        let theWedoId = theWedo === undefined ? "undefined" : theWedo[id];
+        let theWedoSensor = theWedoId === undefined ? "undefined" : theWedoId[sensor];
         switch ( sensor ) {
             case "tiltsensor":
                 if ( slot === "ANY" ) {
-                    return this.wedo[brickid][id][sensor] !== this.tiltMode.NO;
+                    return theWedoSensor !== this.tiltMode.NO;
                 } else {
-                    return this.wedo[brickid][id][sensor] === this.tiltMode[slot];
+                    return theWedoSensor === this.tiltMode[slot];
                 }
             case "motionsensor":
-                return parseInt( this.wedo[brickid][id][sensor] );
+                return parseInt( theWedoSensor );
             case "button":
-                return this.wedo[brickid][sensor] === "true";
+                return theWedoSensor === "true";
+        }
+    }
+
+    private finalName( notNormalized: string ): string {
+        if ( notNormalized !== undefined ) {
+            return notNormalized.replace( /\s/g, '' ).toLowerCase();
+        } else {
+            U.info( "sensor name undefined or null" );
+            return "undefined";
         }
     }
 
