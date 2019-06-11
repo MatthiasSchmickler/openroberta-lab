@@ -25,6 +25,7 @@ import de.fhg.iais.roberta.syntax.action.mbed.LedOnAction;
 import de.fhg.iais.roberta.syntax.action.mbed.PinSetPullAction;
 import de.fhg.iais.roberta.syntax.action.mbed.SingleMotorOnAction;
 import de.fhg.iais.roberta.syntax.action.mbed.SingleMotorStopAction;
+import de.fhg.iais.roberta.syntax.action.mbed.SwitchLedMatrixAction;
 import de.fhg.iais.roberta.syntax.action.motor.MotorGetPowerAction;
 import de.fhg.iais.roberta.syntax.action.motor.MotorOnAction;
 import de.fhg.iais.roberta.syntax.action.motor.MotorSetPowerAction;
@@ -51,9 +52,9 @@ import de.fhg.iais.roberta.syntax.sensor.generic.SoundSensor;
 import de.fhg.iais.roberta.syntax.sensor.generic.TemperatureSensor;
 import de.fhg.iais.roberta.syntax.sensor.generic.TimerSensor;
 import de.fhg.iais.roberta.util.dbc.Assert;
+import de.fhg.iais.roberta.visitor.C;
 import de.fhg.iais.roberta.visitor.hardware.IMbedVisitor;
 import de.fhg.iais.roberta.visitor.lang.codegen.AbstractStackMachineVisitor;
-import de.fhg.iais.roberta.visitor.lang.codegen.C;
 
 public class MbedStackMachineVisitor<V> extends AbstractStackMachineVisitor<V> implements IMbedVisitor<V> {
 
@@ -101,9 +102,9 @@ public class MbedStackMachineVisitor<V> extends AbstractStackMachineVisitor<V> i
 
     @Override
     public V visitImage(Image<V> image) {
-        String imageString = "";
+        JSONArray jsonImage = new JSONArray();
         for ( int i = 0; i < 5; i++ ) {
-            imageString += "[";
+            ArrayList<Integer> a = new ArrayList<Integer>();
             for ( int j = 0; j < 5; j++ ) {
                 String pixel = image.getImage()[i][j].trim();
                 if ( pixel.equals("#") ) {
@@ -111,18 +112,12 @@ public class MbedStackMachineVisitor<V> extends AbstractStackMachineVisitor<V> i
                 } else if ( pixel.equals("") ) {
                     pixel = "0";
                 }
-                imageString += map(Integer.parseInt(pixel), 0, 9, 0, 255);
-                if ( j < 4 ) {
-                    imageString += ",";
-                }
+                a.add(map(Integer.parseInt(pixel), 0, 9, 0, 255));
             }
-            imageString += "]";
-            if ( i < 4 ) {
-                imageString += ",";
-            }
+            jsonImage.put(new JSONArray(a));
         }
-        JSONObject o = mk(C.EXPR).put(C.EXPR, image.getKind().getName());
-        o.put(C.VALUE, imageString);
+        JSONObject o = mk(C.EXPR).put(C.EXPR, image.getKind().getName().toLowerCase());
+        o.put(C.VALUE, jsonImage);
         return app(o);
     }
 
@@ -141,7 +136,7 @@ public class MbedStackMachineVisitor<V> extends AbstractStackMachineVisitor<V> i
     @Override
     public V visitDisplayImageAction(DisplayImageAction<V> displayImageAction) {
         displayImageAction.getValuesToDisplay().visit(this);
-        JSONObject o = mk(C.SHOW_IMAGE_ACTION).put(C.MODE, displayImageAction.getDisplayImageMode());
+        JSONObject o = mk(C.SHOW_IMAGE_ACTION).put(C.MODE, displayImageAction.getDisplayImageMode().toString().toLowerCase());
         return app(o);
     }
 
@@ -161,9 +156,11 @@ public class MbedStackMachineVisitor<V> extends AbstractStackMachineVisitor<V> i
 
     @Override
     public V visitPlayNoteAction(PlayNoteAction<V> playNoteAction) {
-        String duration = playNoteAction.getDuration();
         String freq = playNoteAction.getFrequency();
-        JSONObject o = mk(C.PLAY_NOTE_ACTION).put(C.DURATION, duration).put(C.FREQUENCY, freq);
+        String duration = playNoteAction.getDuration();
+        app(mk(C.EXPR).put(C.EXPR, C.NUM_CONST).put(C.VALUE, freq));
+        app(mk(C.EXPR).put(C.EXPR, C.NUM_CONST).put(C.VALUE, duration));
+        JSONObject o = mk(C.TONE_ACTION);
         return app(o);
     }
 
@@ -175,8 +172,10 @@ public class MbedStackMachineVisitor<V> extends AbstractStackMachineVisitor<V> i
     @Override
     public V visitMotorOnAction(MotorOnAction<V> motorOnAction) {
         motorOnAction.getParam().getSpeed().visit(this);
+        app(mk(C.EXPR).put(C.EXPR, C.NUM_CONST).put(C.VALUE, -1));
         String port = motorOnAction.getUserDefinedPort();
-        JSONObject o = mk(C.MOTOR_ON_ACTION).put(C.PORT.toLowerCase(), port);
+
+        JSONObject o = mk(C.MOTOR_ON_ACTION).put(C.PORT, port.toLowerCase()).put(C.NAME, port.toLowerCase());
         return app(o);
     }
 
@@ -188,7 +187,7 @@ public class MbedStackMachineVisitor<V> extends AbstractStackMachineVisitor<V> i
     @Override
     public V visitMotorStopAction(MotorStopAction<V> motorStopAction) {
         String port = motorStopAction.getUserDefinedPort();
-        JSONObject o = mk(C.MOTOR_STOP).put(C.PORT.toLowerCase(), port);
+        JSONObject o = mk(C.MOTOR_STOP).put(C.PORT, port.toLowerCase());
         return app(o);
     }
 
@@ -204,7 +203,7 @@ public class MbedStackMachineVisitor<V> extends AbstractStackMachineVisitor<V> i
         pinWriteValueAction.getValue().visit(this);
         String pin = pinWriteValueAction.getPort();
         String mode = pinWriteValueAction.getMode();
-        JSONObject o = mk(C.WRITE_PIN_ACTION).put(C.PIN, pin).put(C.MODE, mode);
+        JSONObject o = mk(C.WRITE_PIN_ACTION).put(C.PIN, pin).put(C.MODE, mode.toLowerCase());
         return app(o);
     }
 
@@ -350,13 +349,16 @@ public class MbedStackMachineVisitor<V> extends AbstractStackMachineVisitor<V> i
     public V visitBothMotorsOnAction(BothMotorsOnAction<V> bothMotorsOnAction) {
         bothMotorsOnAction.getSpeedA().visit(this);
         bothMotorsOnAction.getSpeedB().visit(this);
-        JSONObject o = mk(C.BOTH_MOTORS_ON_ACTION);
+        app(mk(C.EXPR).put(C.EXPR, C.NUM_CONST).put(C.VALUE, -1));
+        JSONObject o =
+            mk(C.BOTH_MOTORS_ON_ACTION).put(C.PORT_A, bothMotorsOnAction.getPortA().toLowerCase()).put(C.PORT_B, bothMotorsOnAction.getPortB().toLowerCase());
+
         return app(o);
     }
 
     @Override
     public V visitBothMotorsStopAction(BothMotorsStopAction<V> bothMotorsStopAction) {
-        JSONObject o = mk(C.BOTH_MOTORS_STOP_ACTION);
+        JSONObject o = mk(C.MOTOR_STOP).put(C.PORT, "ab");
         return app(o);
     }
 
@@ -366,19 +368,21 @@ public class MbedStackMachineVisitor<V> extends AbstractStackMachineVisitor<V> i
 
     @Override
     public V visitAssertStmt(AssertStmt<V> assertStmt) {
-        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public V visitSwitchLedMatrixAction(SwitchLedMatrixAction<V> switchLedMatrixAction) {
         return null;
     }
 
     @Override
     public V visitDebugAction(DebugAction<V> debugAction) {
-        // TODO Auto-generated method stub
         return null;
     }
 
     @Override
     public V visitLightAction(LightAction<V> lightAction) {
-        // TODO Auto-generated method stub
         return null;
     }
 

@@ -109,6 +109,7 @@ public final class MicrobitSimValidatorVisitor extends AbstractSimValidatorVisit
         return null;
     }
 
+    @Override
     public Void visitColorConst(ColorConst<Void> colorConst) {
         return null;
     }
@@ -244,13 +245,13 @@ public final class MicrobitSimValidatorVisitor extends AbstractSimValidatorVisit
 
     @Override
     public Void visitBothMotorsOnAction(BothMotorsOnAction<Void> bothMotorsOnAction) {
-        // TODO Auto-generated method stub
+        bothMotorsOnAction.addInfo(NepoInfo.warning("SIM_BLOCK_NOT_SUPPORTED"));
         return null;
     }
 
     @Override
     public Void visitBothMotorsStopAction(BothMotorsStopAction<Void> bothMotorsStopAction) {
-        // TODO Auto-generated method stub
+        bothMotorsStopAction.addInfo(NepoInfo.warning("SIM_BLOCK_NOT_SUPPORTED"));
         return null;
     }
 

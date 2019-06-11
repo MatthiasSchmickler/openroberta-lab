@@ -18,9 +18,6 @@ define(["require", "exports", "interpreter.aRobotBehaviour", "interpreter.consta
             U.loggingEnabled(false, false);
             return _this;
         }
-        RobotMbedBehaviour.prototype.clearDisplay = function () {
-            U.debug('clear display');
-        };
         RobotMbedBehaviour.prototype.getSample = function (s, name, port, sensor, slot) {
             var robotText = 'robot: ' + name + ', port: ' + port;
             U.debug(robotText + ' getsample from ' + sensor);
@@ -71,26 +68,32 @@ define(["require", "exports", "interpreter.aRobotBehaviour", "interpreter.consta
             //        WEBVIEW_C.jsToAppInterface( cmd );
         };
         RobotMbedBehaviour.prototype.toneAction = function (name, frequency, duration) {
-            //        var brickid = WEDO.getBrickIdByName( name ); // TODO: better style
-            var robotText = 'robot: ' + name;
-            U.debug(robotText + ' piezo: ' + ', frequency: ' + frequency + ', duration: ' + duration);
-            //        const cmd = { 'target': 'wedo', 'type': 'command', 'actuator': 'piezo', 'brickid': brickid, 'frequency': frequency, 'duration': duration };
-            //        WEBVIEW_C.jsToAppInterface( cmd );
+            U.debug(name + ' piezo: ' + ', frequency: ' + frequency + ', duration: ' + duration);
+            this.hardwareState.actions.tone = {};
+            this.hardwareState.actions.tone.frequency = frequency;
+            this.hardwareState.actions.tone.duration = duration;
+            return duration;
         };
         RobotMbedBehaviour.prototype.motorOnAction = function (name, port, duration, speed) {
-            //        var brickid = WEDO.getBrickIdByName( name ); // TODO: better style
             var robotText = 'robot: ' + name + ', port: ' + port;
             var durText = duration === -1 ? ' w.o. duration' : (' for ' + duration + ' msec');
             U.debug(robotText + ' motor speed ' + speed + durText);
-            //        const cmd = { 'target': 'wedo', 'type': 'command', 'actuator': 'motor', 'brickid': brickid, 'action': 'on', 'id': port, 'direction': speed < 0 ? 1 : 0, 'power': Math.abs( speed ) };
-            //        WEBVIEW_C.jsToAppInterface( cmd );
+            if (this.hardwareState.actions.motors == undefined) {
+                this.hardwareState.actions.motors = {};
+            }
+            if (port == "ab") {
+                this.hardwareState.actions.motors.a = speed;
+                this.hardwareState.actions.motors.b = speed;
+            }
+            else {
+                this.hardwareState.actions.motors[port] = speed;
+            }
+            return 0;
         };
         RobotMbedBehaviour.prototype.motorStopAction = function (name, port) {
-            //        var brickid = WEDO.getBrickIdByName( name ); // TODO: better style
             var robotText = 'robot: ' + name + ', port: ' + port;
             U.debug(robotText + ' motor stop');
-            //        const cmd = { 'target': 'wedo', 'type': 'command', 'actuator': 'motor', 'brickid': brickid, 'action': 'stop', 'id': port };
-            //        WEBVIEW_C.jsToAppInterface( cmd );
+            this.motorOnAction(name, port, -1, 0);
         };
         RobotMbedBehaviour.prototype.showTextAction = function (text, mode) {
             var showText = "" + text;
@@ -119,6 +122,32 @@ define(["require", "exports", "interpreter.aRobotBehaviour", "interpreter.consta
             this.hardwareState.actions.display.picture = image;
             this.hardwareState.actions.display.mode = mode.toLowerCase();
             return duration;
+        };
+        RobotMbedBehaviour.prototype.displaySetBrightnessAction = function (value) {
+            U.debug('***** set brightness "' + value + '" *****');
+            this.hardwareState.actions.display = {};
+            this.hardwareState.actions.display[C.BRIGHTNESS] = value;
+            return 0;
+        };
+        RobotMbedBehaviour.prototype.displaySetPixelAction = function (x, y, brightness) {
+            U.debug('***** set pixel x="' + x + ", y=" + y + ", brightness=" + brightness + '" *****');
+            this.hardwareState.actions.display = {};
+            this.hardwareState.actions.display[C.PIXEL] = {};
+            this.hardwareState.actions.display[C.PIXEL][C.X] = x;
+            this.hardwareState.actions.display[C.PIXEL][C.Y] = y;
+            this.hardwareState.actions.display[C.PIXEL][C.BRIGHTNESS] = brightness;
+            return 0;
+        };
+        RobotMbedBehaviour.prototype.clearDisplay = function () {
+            U.debug('clear display');
+            this.hardwareState.actions.display = {};
+            this.hardwareState.actions.display.clear = true;
+            return 0;
+        };
+        RobotMbedBehaviour.prototype.writePinAction = function (pin, mode, value) {
+            this.hardwareState.actions["pin" + pin] = {};
+            this.hardwareState.actions["pin" + pin][mode] = {};
+            this.hardwareState.actions["pin" + pin][mode] = value;
         };
         RobotMbedBehaviour.prototype.getState = function () {
             return this.hardwareState;

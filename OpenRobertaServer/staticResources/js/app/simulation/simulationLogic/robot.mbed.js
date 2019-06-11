@@ -223,8 +223,9 @@ define(['simulation.simulation', 'robertaLogic.constants', 'util'], function (SI
                 f(textArray, that);
             }
             if (actions.display.picture) {
+                var p = this.robotBehaviour.getActionState("display", "picture", true);
                 if (actions.display.mode == 'animation') {
-                    var animation = actions.display.picture;
+                    var animation = p;
                     var that = this;
                     function f(animation, index, that) {
                         if (animation && animation.length > index) {
@@ -234,10 +235,11 @@ define(['simulation.simulation', 'robertaLogic.constants', 'util'], function (SI
                     }
                     f(animation, 0, that);
                 } else {
-                    this.display.leds = actions.display.picture;
+                    this.display.leds = p;
                 }
             }
             if (actions.display.clear) {
+                this.robotBehaviour.getActionState("display", "clear", true);
                 this.display.leds = [[0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0]];
             }
             if (actions.display.pixel) {
@@ -255,11 +257,13 @@ define(['simulation.simulation', 'robertaLogic.constants', 'util'], function (SI
         }
         for (var i = 0; i < 4; i++) {
             if (actions['pin' + i] != undefined) {
-                if (actions['pin' + i].digital != undefined) {
-                    this['pin' + i].digitalOut = actions['pin' + i].digital;
+                const d = this.robotBehaviour.getActionState('pin' + i, "digital", true);
+                const a = this.robotBehaviour.getActionState('pin' + i, "analog", true);
+                if (d != undefined) {
+                    this['pin' + i].digitalOut = d;
                 }
-                if (actions['pin' + i].analog != undefined) {
-                    this['pin' + i].analogOut = actions['pin' + i].analog;
+                if (a != undefined) {
+                    this['pin' + i].analogOut = a;
                 }
             }
         }

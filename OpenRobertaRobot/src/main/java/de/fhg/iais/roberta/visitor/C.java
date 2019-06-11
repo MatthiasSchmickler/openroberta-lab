@@ -15,17 +15,18 @@ public class C {
     public static final String AT1 = "at1";
     public static final String AT2 = "at2";
     public static final String AVERAGE = "average";
-    public static final String BACKWARD = "BACKWARD";
-    public static final String BACK = "BACK";
+    public static final String BACKWARD = "backward";
+    public static final String BACK = "back";
     public static final String BINARY = "Binary";
     public static final String BOOLEAN = "BOOLEAN";
     public static final String BOOL_CONST = "BOOL_CONST";
     public static final String BREAK = "break";
     public static final String BRIGHTNESS = "brightness";
+    public static final String BOTH_MOTORS_ON_ACTION = "bothMotorsOnAction";
     public static final String BUTTONS = "buttons";
     public static final String BUTTON_A = "A";
     public static final String BUTTON_B = "B";
-    public static final String CHARACTER = "CHARACTER";
+    public static final String CHARACTER = "character";
     public static final String CLEAR_DISPLAY_ACTION = "ClearDisplay";
     public static final String COLOR = "color";
     public static final String COLOR_CONST = "COLOR_CONST";
@@ -43,7 +44,7 @@ public class C {
     public static final String CREATE_LIST_LENGTH = "listLength";
     public static final String CREATE_LIST_WITH_ITEM = "createCreateListWithItem";
     public static final String CURVE_ACTION = "CurveAction";
-    public static final String DEGREE = "DEGREE";
+    public static final String DEGREE = "degree";
     public static final String DIGITAL = "digital";
     public static final String DIRECTION = "direction";
     public static final String DISPLAY_GET_BRIGHTNESS_ACTION = "displayGetBrightnessAction";
@@ -111,6 +112,7 @@ public class C {
     public static final String LANGUAGE = "language";
     public static final String LAST = "last";
     public static final String LED_COLOR_CONST = "ledColor";
+    public static final String LED_OFF_ACTION = "ledOffAction";
     public static final String LED_ON_ACTION = "ledOnAction";
     public static final String LEFT = "left";
     public static final String LIGHT = "light";
@@ -189,9 +191,12 @@ public class C {
     public static final String PITCH = "pitch";
     public static final String PIXEL = "pixel";
     public static final String PLAY_FILE_ACTION = "PlayFileAction";
-    public static final String PORT = "PORT";
+    public static final String PLAY_NOTE_ACTION = "playNoteAction";
+    public static final String PORT = "port";
+    public static final String PORT_A = "portA";
+    public static final String PORT_B = "portB";
     public static final String POSITION = "position";
-    public static final String POWER = "POWER";
+    public static final String POWER = "power";
     public static final String PRESENCE = "presence";
     public static final String RANDOM = "random";
     public static final String RANDOM_DOUBLE = "randDouble";
@@ -207,12 +212,14 @@ public class C {
     public static final String RGB = "rgb";
     public static final String RGB_COLOR_CONST = "rgbColor";
     public static final String RIGHT = "right";
-    public static final String ROTATION = "ROTATION";
-    public static final String ROTATIONS = "ROTATIONS";
+    public static final String ROTATION = "rotation";
+    public static final String ROTATIONS = "rotations";
     public static final String SAY_TEXT_ACTION = "SayTextAction";
     public static final String SEEK = "presence";
     public static final String SENSOR_MODE = "sensorMode";
     public static final String SENSOR_TYPE = "sensorType";
+    public static final String SERIAL_WRITE_ACTION = "serialWriteAction";
+
     public static final String SET = "set";
     public static final String SET_LANGUAGE_ACTION = "SetLanguageAction";
     public static final String SET_VOLUME_ACTION = "SetVolumeAction";
@@ -237,7 +244,7 @@ public class C {
     public static final String SUM = "sum";
     public static final String TEMPERATURE = "temperature";
     public static final String TERNARY_EXPR = "createTernaryExpr";
-    public static final String TEXT = "TEXT";
+    public static final String TEXT = "text";
     public static final String TEXT_APPEND = "textAppend";
     public static final String TEXT_JOIN = "createTextJoin";
     public static final String THEN_LIST = "thenList";
@@ -245,6 +252,7 @@ public class C {
     public static final String TIME = "time";
     public static final String TIMER = "timer";
     public static final String TIMER_SENSOR_RESET = "createResetTimer";
+    public static final String TIMES = "TIMES";
     public static final String TONE_ACTION = "ToneAction";
     public static final String TOUCH = "touch";
     public static final int TRACKWIDTH = 40;
@@ -269,6 +277,7 @@ public class C {
     public static final String WHERE1 = "where1";
     public static final String WHERE2 = "where2";
     public static final String WHILE = "WHILE";
+    public static final String WRITE_PIN_ACTION = "writePinAction";
     public static final String X = "x";
     public static final String Y = "y";
 }

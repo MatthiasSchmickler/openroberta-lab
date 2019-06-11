@@ -183,9 +183,19 @@ export class Interpreter {
                     }
                     break;
                 }
+                case C.BOTH_MOTORS_ON_ACTION: {
+                    const duration = s.pop();
+                    const speedB = s.pop();
+                    const speedA = s.pop();
+                    const portA = stmt[C.PORT_A];
+                    const portB = stmt[C.PORT_B];
+                    n.motorOnAction( portA, portA, duration, speedA );
+                    n.motorOnAction( portB, portB, duration, speedB );
+                    return 0;
+                }
                 case C.MOTOR_STOP: {
                     n.motorStopAction( stmt[C.NAME], stmt[C.PORT] );
-                    break;
+                    return 0;
                 }
                 case C.REPEAT_STMT:
                     this.evalRepeat( stmt );
@@ -206,13 +216,24 @@ export class Interpreter {
                     }
                     break;
                 case C.SHOW_TEXT_ACTION: {
-                    var text = s.pop();
+                    const text = s.pop();
                     return n.showTextAction( text, stmt[C.MODE] );
                 }
                 case C.SHOW_IMAGE_ACTION: {
-                    var image = s.pop();
+                    const image = s.pop();
                     return n.showImageAction( image, stmt[C.MODE] );
                 }
+                case C.DISPLAY_SET_BRIGHTNESS_ACTION: {
+                    const b = s.pop();
+                    return n.displaySetBrightnessAction( b );
+                }
+                case C.DISPLAY_SET_PIXEL_ACTION: {
+                    const b = s.pop();
+                    const y = s.pop();
+                    const x = s.pop();
+                    return n.displaySetPixelAction( x, y, b );
+                }
+
                 case C.STATUS_LIGHT_ACTION:
                     n.statusLightOffAction( stmt[C.NAME], stmt[C.PORT] )
                     break;
@@ -247,6 +268,14 @@ export class Interpreter {
                 case C.WAIT_TIME_STMT: {
                     const time = s.pop();
                     return time; // wait for handler being called
+                }
+                case C.WRITE_PIN_ACTION: {
+                    const value = s.pop();
+                    const mode =  stmt[C.MODE];
+                    const pin = stmt[C.PIN];
+                    
+                    n.writePinAction(pin, mode, value);
+                    return 0;
                 }
                 default:
                     U.dbcException( "invalid stmt op: " + opCode );

@@ -3,7 +3,11 @@
 		{
 			"opc": "expr",
 			"expr": "COLOR_CONST",
-			"value": "#FF0000"
+			"value": [
+				255,
+				0,
+				0
+			]
 		},
 		{
 			"opc": "ledOnAction"
