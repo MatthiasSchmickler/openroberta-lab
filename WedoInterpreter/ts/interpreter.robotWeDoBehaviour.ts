@@ -48,18 +48,18 @@ export class RobotWeDoBehaviour extends ARobotBehaviour {
                 }
                 break;
             case "didAddService":
-                let theWedo = this.wedo[data.brickid];
+                let theWedoA = this.wedo[data.brickid];
                 if ( data.state == "connected" ) {
                     if ( data.id && data.sensor ) {
-                        theWedo[data.id] = {};
-                        theWedo[data.id][this.finalName( data.sensor )] = '';
+                        theWedoA[data.id] = {};
+                        theWedoA[data.id][this.finalName( data.sensor )] = '';
                     } else if ( data.id && data.actuator ) {
-                        theWedo[data.id] = {};
-                        theWedo[data.id][this.finalName( data.actuator )] = '';
+                        theWedoA[data.id] = {};
+                        theWedoA[data.id][this.finalName( data.actuator )] = '';
                     } else if ( data.sensor ) {
-                        theWedo[this.finalName( data.sensor )] = '';
+                        theWedoA[this.finalName( data.sensor )] = '';
                     } else {
-                        theWedo[this.finalName( data.actuator )] = '';
+                        theWedoA[this.finalName( data.actuator )] = '';
                     }
                 }
                 break;
@@ -73,11 +73,11 @@ export class RobotWeDoBehaviour extends ARobotBehaviour {
                 }
                 break;
             case "update":
-                let theWedo = this.wedo[data.brickid];
+                let theWedoU = this.wedo[data.brickid];
                 if ( data.id ) {
-                    theWedo[data.id][this.finalName( data.sensor )] = data.state;
+                    theWedoU[data.id][this.finalName( data.sensor )] = data.state;
                 } else {
-                    theWedo[this.finalName( data.sensor )] = data.state;
+                    theWedoU[this.finalName( data.sensor )] = data.state;
                 }
                 break;
             default:
