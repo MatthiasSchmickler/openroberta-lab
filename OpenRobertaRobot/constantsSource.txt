@@ -250,7 +250,6 @@ TIME = "time"
 TIMER = "timer"
 TIMES = "times"
 TIMER_SENSOR_RESET = "createResetTimer"
-TIMES = "TIMES"
 TONE_ACTION = "ToneAction"
 TOUCH = "touch"
 TRACKWIDTH = 40

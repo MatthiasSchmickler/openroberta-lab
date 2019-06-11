@@ -70,10 +70,11 @@ export class RobotWeDoBehaviourTest extends ARobotBehaviour {
         U.info( robotText + ' piezo: ' + ', frequency: ' + frequency + ', duration: ' + duration );
     }
 
-    public motorOnAction( name: string, port: number, duration: number, speed: number ) {
+    public motorOnAction( name: string, port: number, duration: number, speed: number ): number {
         const robotText = 'robot: ' + name + ', port: ' + port;
         const durText = duration === -1 ? ' w.o. duration' : ( ' for ' + duration + ' msec' );
         U.info( robotText + ' motor speed ' + speed + durText );
+        return 0;
     }
 
     public motorStopAction( name: string, port: number ) {
@@ -87,8 +88,18 @@ export class RobotWeDoBehaviourTest extends ARobotBehaviour {
         return 0;
     }
 
+    public writePinAction( _pin: any, _mode: string, _value: number ): void {
+    }
+
     public showImageAction( _1: any, _2: string ): number {
         U.info( 'show image NYI' );
+        return 0;
+    }
+
+    public displaySetBrightnessAction( _value: number ): number {
+        return 0;
+    }
+    public displaySetPixelAction( _x: number, _y: number, _brightness: number ): number {
         return 0;
     }
 

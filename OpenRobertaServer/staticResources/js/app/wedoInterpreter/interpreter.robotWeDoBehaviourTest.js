@@ -73,6 +73,7 @@ define(["require", "exports", "interpreter.aRobotBehaviour", "interpreter.consta
             var robotText = 'robot: ' + name + ', port: ' + port;
             var durText = duration === -1 ? ' w.o. duration' : (' for ' + duration + ' msec');
             U.info(robotText + ' motor speed ' + speed + durText);
+            return 0;
         };
         RobotWeDoBehaviourTest.prototype.motorStopAction = function (name, port) {
             var robotText = 'robot: ' + name + ', port: ' + port;
@@ -83,8 +84,16 @@ define(["require", "exports", "interpreter.aRobotBehaviour", "interpreter.consta
             U.info('show "' + showText + '"');
             return 0;
         };
+        RobotWeDoBehaviourTest.prototype.writePinAction = function (_pin, _mode, _value) {
+        };
         RobotWeDoBehaviourTest.prototype.showImageAction = function (_1, _2) {
             U.info('show image NYI');
+            return 0;
+        };
+        RobotWeDoBehaviourTest.prototype.displaySetBrightnessAction = function (_value) {
+            return 0;
+        };
+        RobotWeDoBehaviourTest.prototype.displaySetPixelAction = function (_x, _y, _brightness) {
             return 0;
         };
         RobotWeDoBehaviourTest.prototype.close = function () {

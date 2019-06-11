@@ -251,7 +251,6 @@ export const TIME: string = "time";
 export const TIMER: string = "timer";
 export const TIMES: string = "times";
 export const TIMER_SENSOR_RESET: string = "createResetTimer";
-export const TIMES: string = "TIMES";
 export const TONE_ACTION: string = "ToneAction";
 export const TOUCH: string = "touch";
 export const TRACKWIDTH: number = 40;

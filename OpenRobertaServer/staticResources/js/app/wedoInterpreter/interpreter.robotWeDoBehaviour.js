@@ -236,6 +236,14 @@ define(["require", "exports", "interpreter.aRobotBehaviour", "interpreter.consta
             U.debug('***** show image not supported by WeDo *****');
             return 0;
         };
+        RobotWeDoBehaviour.prototype.displaySetBrightnessAction = function (_value) {
+            return 0;
+        };
+        RobotWeDoBehaviour.prototype.displaySetPixelAction = function (_x, _y, _brightness) {
+            return 0;
+        };
+        RobotWeDoBehaviour.prototype.writePinAction = function (_pin, _mode, _value) {
+        };
         RobotWeDoBehaviour.prototype.close = function () {
             var ids = this.getConnectedBricks();
             for (var id in ids) {

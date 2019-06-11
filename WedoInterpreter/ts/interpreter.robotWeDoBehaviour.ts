@@ -246,6 +246,17 @@ export class RobotWeDoBehaviour extends ARobotBehaviour {
         return 0;
     }
 
+    public displaySetBrightnessAction( _value: number ): number {
+        return 0;
+    }
+
+    public displaySetPixelAction( _x: number, _y: number, _brightness: number ): number {
+        return 0;
+    }
+
+    public writePinAction( _pin: any, _mode: string, _value: number ): void {
+    }
+
     public close() {
         var ids = this.getConnectedBricks();
         for ( let id in ids ) {

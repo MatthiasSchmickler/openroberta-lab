@@ -62,7 +62,7 @@ public class C {
     public static final String DURATION = "duration";
     public static final String EACH_COUNTER = "eachcounter";
     public static final String ELSE_STMTS = "elseStmts";
-    public static final double ENC = 360.0 / (3.0 * Math.PI * 5.6);
+    public static final double ENC = 360.0 / ( 3.0 * Math.PI * 5.6 );
     public static final String ENCODER_SENSOR_RESET = "encoderSensorReset";
     public static final String ENCODER_SENSOR_SAMPLE = "encoderSensorSample";
     public static final String ENTER = "enter";
@@ -251,15 +251,15 @@ public class C {
     public static final String THEN_STMTS = "thenStmts";
     public static final String TIME = "time";
     public static final String TIMER = "timer";
+    public static final String TIMES = "times";
     public static final String TIMER_SENSOR_RESET = "createResetTimer";
-    public static final String TIMES = "TIMES";
     public static final String TONE_ACTION = "ToneAction";
     public static final String TOUCH = "touch";
     public static final int TRACKWIDTH = 40;
     public static final String TURN_ACTION = "TurnAction";
     public static final String TURN_DIRECTION = "turnDirection";
     public static final String TURN_LIGHT = "turnLight";
-    public static final double TURN_RATIO = (40 / 3.) / 2.8;
+    public static final double TURN_RATIO = ( 40 / 3. ) / 2.8;
     public static final String TYPE = "type";
     public static final String ULTRASONIC = "ultrasonic";
     public static final String UNARY = "Unary";
