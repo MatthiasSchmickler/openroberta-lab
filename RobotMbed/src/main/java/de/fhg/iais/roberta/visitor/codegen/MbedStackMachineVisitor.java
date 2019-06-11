@@ -94,7 +94,7 @@ public class MbedStackMachineVisitor<V> extends AbstractStackMachineVisitor<V> i
     @Override
     public V visitDisplayTextAction(DisplayTextAction<V> displayTextAction) {
         displayTextAction.getMsg().visit(this);
-        JSONObject o = mk(C.SHOW_TEXT_ACTION).put(C.MODE, displayTextAction.getMode());
+        JSONObject o = mk(C.SHOW_TEXT_ACTION).put(C.MODE, displayTextAction.getMode().toString().toLowerCase());
 
         return app(o);
     }
@@ -129,16 +129,12 @@ public class MbedStackMachineVisitor<V> extends AbstractStackMachineVisitor<V> i
     @Override
     public V visitPredefinedImage(PredefinedImage<V> predefinedImage) {
         final String image = predefinedImage.getImageName().getImageString();
-        final String[] imageArray = image.split("\\\\n");
-        JSONObject o = mk(C.EXPR).put(C.EXPR, C.IMAGE).put(C.VALUE, image);
+        JSONArray a =
+            new JSONArray(
+                Arrays.stream(image.split("\\\\n")).map(x -> new JSONArray(Arrays.stream(x.split(",")).mapToInt(Integer::parseInt).toArray())).toArray());
+
+        JSONObject o = mk(C.EXPR).put(C.EXPR, C.IMAGE).put(C.VALUE, a);
         return app(o);
-        //        image.
-        //        JSONArray a = new JSONArray().put(imageArray.)
-        //                for ( final String element : imageArray ) {
-        //                        predefinedImageArray += element;
-        //                 
-        //                }
-        //
 
     }
 

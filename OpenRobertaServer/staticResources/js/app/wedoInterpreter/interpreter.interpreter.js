@@ -271,6 +271,9 @@ define(["require", "exports", "interpreter.state", "interpreter.constants", "int
                 case C.COLOR_CONST:
                     s.push(expr[C.VALUE]);
                     break;
+                case C.IMAGE:
+                    s.push(expr[C.VALUE]);
+                    break;
                 case C.UNARY: {
                     var subOp = expr[C.OP];
                     switch (subOp) {

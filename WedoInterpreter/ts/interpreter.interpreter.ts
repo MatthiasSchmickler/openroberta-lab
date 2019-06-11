@@ -283,6 +283,9 @@ export class Interpreter {
             case C.COLOR_CONST:
                 s.push( expr[C.VALUE] );
                 break;
+            case C.IMAGE:
+                s.push( expr[C.VALUE] );
+                break;
             case C.UNARY: {
                 const subOp = expr[C.OP];
                 switch ( subOp ) {

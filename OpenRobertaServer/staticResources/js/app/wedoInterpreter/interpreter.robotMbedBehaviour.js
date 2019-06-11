@@ -116,7 +116,7 @@ define(["require", "exports", "interpreter.aRobotBehaviour", "interpreter.consta
                 duration = imageLen * 200;
             }
             this.hardwareState.actions.display = {};
-            this.hardwareState.action.display.picture = image;
+            this.hardwareState.actions.display.picture = image;
             this.hardwareState.actions.display.mode = mode.toLowerCase();
             return duration;
         };

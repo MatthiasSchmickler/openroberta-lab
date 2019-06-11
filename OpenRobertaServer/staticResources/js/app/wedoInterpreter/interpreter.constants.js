@@ -243,7 +243,6 @@ define(["require", "exports"], function (require, exports) {
     exports.TIME = "time";
     exports.TIMER = "timer";
     exports.TIMER_SENSOR_RESET = "createResetTimer";
-    exports.TIMES = "TIMES";
     exports.TONE_ACTION = "ToneAction";
     exports.TOUCH = "touch";
     exports.TRACKWIDTH = 40;

@@ -242,7 +242,6 @@ THEN_STMTS = "thenStmts"
 TIME = "time"
 TIMER = "timer"
 TIMER_SENSOR_RESET = "createResetTimer"
-TIMES = "TIMES"
 TONE_ACTION = "ToneAction"
 TOUCH = "touch"
 TRACKWIDTH = 40

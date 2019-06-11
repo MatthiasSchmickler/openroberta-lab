@@ -245,7 +245,6 @@ public class C {
     public static final String TIME = "time";
     public static final String TIMER = "timer";
     public static final String TIMER_SENSOR_RESET = "createResetTimer";
-    public static final String TIMES = "TIMES";
     public static final String TONE_ACTION = "ToneAction";
     public static final String TOUCH = "touch";
     public static final int TRACKWIDTH = 40;
