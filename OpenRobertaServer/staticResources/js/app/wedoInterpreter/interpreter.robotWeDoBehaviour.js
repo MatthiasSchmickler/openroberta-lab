@@ -98,14 +98,17 @@ define(["require", "exports", "interpreter.aRobotBehaviour", "interpreter.consta
         RobotWeDoBehaviour.prototype.getSensorValue = function (brickid, sensor, id, slot) {
             var theWedo = this.wedo[brickid];
             var theWedoId = theWedo[id];
+            if (theWedoId === undefined) {
+                theWedoId = theWedo["1"] !== undefined ? theWedo["1"] : theWedo["2"];
+            }
             var theWedoSensor = theWedoId === undefined ? "undefined" : theWedoId[sensor];
             switch (sensor) {
                 case "tiltsensor":
                     if (slot === "ANY") {
-                        return theWedoSensor !== this.tiltMode.NO;
+                        return parseInt(theWedoSensor) !== parseInt(this.tiltMode.NO);
                     }
                     else {
-                        return theWedoSensor === this.tiltMode[slot];
+                        return parseInt(theWedoSensor) === parseInt(this.tiltMode[slot]);
                     }
                 case "motionsensor":
                     return parseInt(theWedoSensor);

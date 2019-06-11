@@ -92,14 +92,17 @@ export class RobotWeDoBehaviour extends ARobotBehaviour {
 
     public getSensorValue( brickid, sensor, id, slot ) {
         let theWedo = this.wedo[brickid];
-        let theWedoId = theWedo[id];
+        var theWedoId = theWedo[id];
+        if ( theWedoId === undefined ) {
+            theWedoId = theWedo["1"] !== undefined ? theWedo["1"] : theWedo["2"];
+        }
         let theWedoSensor = theWedoId === undefined ? "undefined" : theWedoId[sensor];
         switch ( sensor ) {
             case "tiltsensor":
                 if ( slot === "ANY" ) {
-                    return theWedoSensor !== this.tiltMode.NO;
+                    return parseInt( theWedoSensor ) !== parseInt( this.tiltMode.NO );
                 } else {
-                    return theWedoSensor === this.tiltMode[slot];
+                    return parseInt( theWedoSensor ) === parseInt( this.tiltMode[slot] );
                 }
             case "motionsensor":
                 return parseInt( theWedoSensor );
