@@ -75,6 +75,9 @@ export class RobotWeDoBehaviour extends ARobotBehaviour {
             case "update":
                 let theWedoU = this.wedo[data.brickid];
                 if ( data.id ) {
+                    if ( theWedoU[data.id] === undefined ) {
+                        theWedoU[data.id] = {};
+                    }
                     theWedoU[data.id][this.finalName( data.sensor )] = data.state;
                 } else {
                     theWedoU[this.finalName( data.sensor )] = data.state;
@@ -89,7 +92,7 @@ export class RobotWeDoBehaviour extends ARobotBehaviour {
 
     public getSensorValue( brickid, sensor, id, slot ) {
         let theWedo = this.wedo[brickid];
-        let theWedoId = theWedo === undefined ? "undefined" : theWedo[id];
+        let theWedoId = theWedo[id];
         let theWedoSensor = theWedoId === undefined ? "undefined" : theWedoId[sensor];
         switch ( sensor ) {
             case "tiltsensor":

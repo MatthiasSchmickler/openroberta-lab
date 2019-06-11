@@ -80,6 +80,9 @@ define(["require", "exports", "interpreter.aRobotBehaviour", "interpreter.consta
                 case "update":
                     var theWedoU = this.wedo[data.brickid];
                     if (data.id) {
+                        if (theWedoU[data.id] === undefined) {
+                            theWedoU[data.id] = {};
+                        }
                         theWedoU[data.id][this.finalName(data.sensor)] = data.state;
                     }
                     else {
@@ -94,7 +97,7 @@ define(["require", "exports", "interpreter.aRobotBehaviour", "interpreter.consta
         };
         RobotWeDoBehaviour.prototype.getSensorValue = function (brickid, sensor, id, slot) {
             var theWedo = this.wedo[brickid];
-            var theWedoId = theWedo === undefined ? "undefined" : theWedo[id];
+            var theWedoId = theWedo[id];
             var theWedoSensor = theWedoId === undefined ? "undefined" : theWedoId[sensor];
             switch (sensor) {
                 case "tiltsensor":
