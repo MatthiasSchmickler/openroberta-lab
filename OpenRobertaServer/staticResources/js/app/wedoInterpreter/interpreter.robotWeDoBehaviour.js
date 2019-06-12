@@ -31,7 +31,7 @@ define(["require", "exports", "interpreter.aRobotBehaviour", "interpreter.consta
             return _this;
         }
         RobotWeDoBehaviour.prototype.update = function (data) {
-            U.info('update ' + data.toString());
+            U.info('update type:' + data.type + ' state:' + data.state + ' sensor:' + data.sensor + ' actor:' + data.actuator);
             if (data.target !== "wedo") {
                 return;
             }
