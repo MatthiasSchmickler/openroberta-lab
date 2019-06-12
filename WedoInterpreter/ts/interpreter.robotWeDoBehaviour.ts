@@ -32,7 +32,7 @@ export class RobotWeDoBehaviour extends ARobotBehaviour {
     }
 
     public update( data ) {
-        U.info( 'update ' + data );
+        U.info( 'update ' + data.toString() );
         if ( data.target !== "wedo" ) {
             return;
         }
@@ -90,36 +90,6 @@ export class RobotWeDoBehaviour extends ARobotBehaviour {
         U.info( this.wedo );
     }
 
-    public getSensorValue( brickid, sensor, id, slot ) {
-        let theWedo = this.wedo[brickid];
-        var theWedoId = theWedo[id];
-        if ( theWedoId === undefined ) {
-            theWedoId = theWedo["1"] !== undefined ? theWedo["1"] : theWedo["2"];
-        }
-        let theWedoSensor = theWedoId === undefined ? "undefined" : theWedoId[sensor];
-        switch ( sensor ) {
-            case "tiltsensor":
-                if ( slot === "ANY" ) {
-                    return parseInt( theWedoSensor ) !== parseInt( this.tiltMode.NO );
-                } else {
-                    return parseInt( theWedoSensor ) === parseInt( this.tiltMode[slot] );
-                }
-            case "motionsensor":
-                return parseInt( theWedoSensor );
-            case "button":
-                return theWedoSensor === "true";
-        }
-    }
-
-    private finalName( notNormalized: string ): string {
-        if ( notNormalized !== undefined ) {
-            return notNormalized.replace( /\s/g, '' ).toLowerCase();
-        } else {
-            U.info( "sensor name undefined or null" );
-            return "undefined";
-        }
-    }
-
     public getConnectedBricks() {
         var brickids = [];
         for ( var brickid in this.wedo ) {
@@ -129,7 +99,6 @@ export class RobotWeDoBehaviour extends ARobotBehaviour {
         }
         return brickids;
     }
-
 
     public getBrickIdByName( name ) {
         for ( var brickid in this.wedo ) {
@@ -153,8 +122,7 @@ export class RobotWeDoBehaviour extends ARobotBehaviour {
 
     public getSample( s: State, name: string, port: number, sensor: string, slot: string ) {
         var robotText = 'robot: ' + name + ', port: ' + port;
-        U.info( robotText + ' getsample from ' + sensor );
-        U.info( ' state ' + this.wedo );
+        U.info( robotText + ' getsample called for ' + sensor );
         var sensorName;
         switch ( sensor ) {
             case "infrared":
@@ -172,8 +140,39 @@ export class RobotWeDoBehaviour extends ARobotBehaviour {
             default:
                 throw 'invalid get sample for ' + name + ' - ' + port + ' - ' + sensor + ' - ' + slot;
         }
-        var brickid = this.getBrickIdByName( name );
-        s.push( this.getSensorValue( brickid, sensorName, port, slot ) );
+        let wedoId = this.getBrickIdByName( name );
+        s.push( this.getSensorValue( wedoId, port, sensorName, slot ) );
+    }
+
+    private getSensorValue( wedoId, port, sensor, slot ) {
+        let theWedo = this.wedo[wedoId];
+        let thePort = theWedo[port];
+        if ( thePort === undefined ) {
+            thePort = theWedo["1"] !== undefined ? theWedo["1"] : theWedo["2"];
+        }
+        let theSensor = thePort === undefined ? "undefined" : thePort[sensor];
+        U.info( 'sensor object ' + theSensor.toString() );
+        switch ( sensor ) {
+            case "tiltsensor":
+                if ( slot === "ANY" ) {
+                    return parseInt( theSensor ) !== parseInt( this.tiltMode.NO );
+                } else {
+                    return parseInt( theSensor ) === parseInt( this.tiltMode[slot] );
+                }
+            case "motionsensor":
+                return parseInt( theSensor );
+            case "button":
+                return theWedo.button === "true";
+        }
+    }
+
+    private finalName( notNormalized: string ): string {
+        if ( notNormalized !== undefined ) {
+            return notNormalized.replace( /\s/g, '' ).toLowerCase();
+        } else {
+            U.info( "sensor name undefined" );
+            return "undefined";
+        }
     }
 
     public timerReset( port: number ) {

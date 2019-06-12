@@ -31,7 +31,7 @@ define(["require", "exports", "interpreter.aRobotBehaviour", "interpreter.consta
             return _this;
         }
         RobotWeDoBehaviour.prototype.update = function (data) {
-            U.info('update ' + data);
+            U.info('update ' + data.toString());
             if (data.target !== "wedo") {
                 return;
             }
@@ -95,36 +95,6 @@ define(["require", "exports", "interpreter.aRobotBehaviour", "interpreter.consta
             }
             U.info(this.wedo);
         };
-        RobotWeDoBehaviour.prototype.getSensorValue = function (brickid, sensor, id, slot) {
-            var theWedo = this.wedo[brickid];
-            var theWedoId = theWedo[id];
-            if (theWedoId === undefined) {
-                theWedoId = theWedo["1"] !== undefined ? theWedo["1"] : theWedo["2"];
-            }
-            var theWedoSensor = theWedoId === undefined ? "undefined" : theWedoId[sensor];
-            switch (sensor) {
-                case "tiltsensor":
-                    if (slot === "ANY") {
-                        return parseInt(theWedoSensor) !== parseInt(this.tiltMode.NO);
-                    }
-                    else {
-                        return parseInt(theWedoSensor) === parseInt(this.tiltMode[slot]);
-                    }
-                case "motionsensor":
-                    return parseInt(theWedoSensor);
-                case "button":
-                    return theWedoSensor === "true";
-            }
-        };
-        RobotWeDoBehaviour.prototype.finalName = function (notNormalized) {
-            if (notNormalized !== undefined) {
-                return notNormalized.replace(/\s/g, '').toLowerCase();
-            }
-            else {
-                U.info("sensor name undefined or null");
-                return "undefined";
-            }
-        };
         RobotWeDoBehaviour.prototype.getConnectedBricks = function () {
             var brickids = [];
             for (var brickid in this.wedo) {
@@ -153,8 +123,7 @@ define(["require", "exports", "interpreter.aRobotBehaviour", "interpreter.consta
         };
         RobotWeDoBehaviour.prototype.getSample = function (s, name, port, sensor, slot) {
             var robotText = 'robot: ' + name + ', port: ' + port;
-            U.info(robotText + ' getsample from ' + sensor);
-            U.info(' state ' + this.wedo);
+            U.info(robotText + ' getsample called for ' + sensor);
             var sensorName;
             switch (sensor) {
                 case "infrared":
@@ -172,8 +141,39 @@ define(["require", "exports", "interpreter.aRobotBehaviour", "interpreter.consta
                 default:
                     throw 'invalid get sample for ' + name + ' - ' + port + ' - ' + sensor + ' - ' + slot;
             }
-            var brickid = this.getBrickIdByName(name);
-            s.push(this.getSensorValue(brickid, sensorName, port, slot));
+            var wedoId = this.getBrickIdByName(name);
+            s.push(this.getSensorValue(wedoId, port, sensorName, slot));
+        };
+        RobotWeDoBehaviour.prototype.getSensorValue = function (wedoId, port, sensor, slot) {
+            var theWedo = this.wedo[wedoId];
+            var thePort = theWedo[port];
+            if (thePort === undefined) {
+                thePort = theWedo["1"] !== undefined ? theWedo["1"] : theWedo["2"];
+            }
+            var theSensor = thePort === undefined ? "undefined" : thePort[sensor];
+            U.info('sensor object ' + theSensor.toString());
+            switch (sensor) {
+                case "tiltsensor":
+                    if (slot === "ANY") {
+                        return parseInt(theSensor) !== parseInt(this.tiltMode.NO);
+                    }
+                    else {
+                        return parseInt(theSensor) === parseInt(this.tiltMode[slot]);
+                    }
+                case "motionsensor":
+                    return parseInt(theSensor);
+                case "button":
+                    return theWedo.button === "true";
+            }
+        };
+        RobotWeDoBehaviour.prototype.finalName = function (notNormalized) {
+            if (notNormalized !== undefined) {
+                return notNormalized.replace(/\s/g, '').toLowerCase();
+            }
+            else {
+                U.info("sensor name undefined");
+                return "undefined";
+            }
         };
         RobotWeDoBehaviour.prototype.timerReset = function (port) {
             this.timers[port] = Date.now();
