@@ -151,7 +151,7 @@ export class RobotWeDoBehaviour extends ARobotBehaviour {
             thePort = theWedo["1"] !== undefined ? theWedo["1"] : theWedo["2"];
         }
         let theSensor = thePort === undefined ? "undefined" : thePort[sensor];
-        U.info( 'sensor object ' + theSensor.toString() );
+        U.info( 'sensor object ' + ( theSensor === undefined ? "undefined" : theSensor.toString() ) );
         switch ( sensor ) {
             case "tiltsensor":
                 if ( slot === "ANY" ) {
