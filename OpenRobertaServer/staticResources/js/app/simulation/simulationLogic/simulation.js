@@ -349,7 +349,7 @@ define( ['exports', 'simulation.scene', 'simulation.program.eval', 'simulation.m
         }
         exports.cancel = cancel;
 
-        var sensorValues = {};
+       
         var reset = false;
 
         /*
@@ -433,7 +433,7 @@ define( ['exports', 'simulation.scene', 'simulation.program.eval', 'simulation.m
                 }
             }
             reset = robots[0].buttons.Reset;
-            sensorValues = scene.updateSensorValues( !pause );
+            scene.updateSensorValues( !pause );
             scene.drawRobots();
         }
 

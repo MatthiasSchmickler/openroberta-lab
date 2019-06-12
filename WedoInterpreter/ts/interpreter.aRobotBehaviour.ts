@@ -17,6 +17,10 @@ export abstract class ARobotBehaviour {
         }
         return v;
     }
+    
+    public updateSensorState(state: any): void {
+        this.hardwareState.sensors = state;
+    }
 
     abstract clearDisplay(): void;
     abstract getSample( s: State, name: string, port: number, sensor: string, slot: string ): void;

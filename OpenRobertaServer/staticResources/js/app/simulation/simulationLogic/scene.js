@@ -338,10 +338,9 @@ define(['simulation.simulation', 'simulation.math', 'util', 'robertaLogic.consta
     }
 
     Scene.prototype.updateSensorValues = function (running) {
-        var robotsValues = [];
         for (var r = 0; r < this.numprogs; r++) {
             var personalObstacleList = SIM.obstacleList.slice();
-            var values = {};
+            var values = this.robots[r].robotBehaviour.hardwareState.sensors;
             for (var i = 0; i < this.numprogs; i++) {
                 if (i === r) {
                     continue;
@@ -728,9 +727,7 @@ define(['simulation.simulation', 'simulation.math', 'util', 'robertaLogic.consta
             }
             values.correctDrive = SIM.getBackground() == 7;
             values.frameTime = SIM.getDt();
-            robotsValues.push(values);
         }
-        return robotsValues;
     }
 
     function getFnName(fn) {

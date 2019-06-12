@@ -252,14 +252,15 @@ public class MbedStackMachineVisitor<V> extends AbstractStackMachineVisitor<V> i
         if ( timerSensor.getMode().equals(SC.DEFAULT) || timerSensor.getMode().equals(SC.VALUE) ) {
             mode = C.TIMER;
         }
-        JSONObject o = mk(C.GET_SAMPLE).put(C.PORT.toLowerCase(), port).put(C.SENSOR_TYPE, mode);
+        JSONObject o = mk(C.GET_SAMPLE).put(C.PORT, port).put(C.SENSOR_TYPE, mode);
         return app(o);
     }
 
     @Override
     public V visitPinTouchSensor(PinTouchSensor<V> sensorGetSample) {
         String port = sensorGetSample.getPort();
-        JSONObject o = mk(C.GET_SAMPLE).put(C.PORT.toLowerCase(), port).put(C.SENSOR_TYPE, C.PIN);
+        String slot = sensorGetSample.getSlot();
+        JSONObject o = mk(C.GET_SAMPLE).put(C.PORT, port).put(C.GET_SAMPLE, C.PIN).put(C.NAME, "calliope").put(C.SLOT, slot);
         return app(o);
     }
 
@@ -285,8 +286,9 @@ public class MbedStackMachineVisitor<V> extends AbstractStackMachineVisitor<V> i
     @Override
     public V visitPinGetValueSensor(PinGetValueSensor<V> pinValueSensor) {
         String port = pinValueSensor.getPort();
-        String mode = pinValueSensor.getMode();
-        JSONObject o = mk(C.GET_SAMPLE).put(C.PORT.toLowerCase(), port).put(C.MODE, mode).put(C.SENSOR_TYPE, C.PIN);
+        String slot = pinValueSensor.getSlot().toLowerCase();
+        String mode = pinValueSensor.getMode().toLowerCase();
+        JSONObject o = mk(C.GET_SAMPLE).put(C.PORT, port).put(C.GET_SAMPLE, C.PIN).put(C.NAME, "calliope").put(C.SLOT, slot).put(C.MODE, mode);
         return app(o);
     }
 

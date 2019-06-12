@@ -16,6 +16,9 @@ define(["require", "exports"], function (require, exports) {
             }
             return v;
         };
+        ARobotBehaviour.prototype.updateSensorState = function (state) {
+            this.hardwareState.sensors = state;
+        };
         return ARobotBehaviour;
     }());
     exports.ARobotBehaviour = ARobotBehaviour;

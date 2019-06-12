@@ -12,28 +12,32 @@ export class RobotMbedBehaviour extends ARobotBehaviour {
     }
 
 
-    public getSample( s: State, name: string, port: number, sensor: string, slot: string ) {
-        var robotText = 'robot: ' + name + ', port: ' + port;
+    public getSample( s: State, name: string, port: number, sensor: string, slot: string, mode: string ) {
+        var robotText = 'robot: ' + name + ', port: ' + port + ', slot: ' + slot + ', mode: ' + mode;
         U.debug( robotText + ' getsample from ' + sensor );
         var sensorName;
-        switch ( sensor ) {
-            case "infrared":
-                sensorName = "motionsensor";
-                break;
-            case "gyro":
-                sensorName = "tiltsensor";
-                break;
-            case "buttons":
-                sensorName = "button";
-                break;
-            case C.TIMER:
-                s.push( this.timerGet( port ) );
-                return;
-            default:
-                throw 'invalid get sample for ' + name + ' - ' + port + ' - ' + sensor + ' - ' + slot;
-        }
+        //        switch ( sensor ) {
+        //            case "infrared":
+        //                sensorName = "motionsensor";
+        //                break;
+        //            case "gyro":
+        //                sensorName = "tiltsensor";
+        //                break;
+        //            case "buttons":
+        //                sensorName = "button";
+        //                break;
+        //            case C.TIMER:
+        //                s.push( this.timerGet( port ) );
+        //                return;
+        //            default:
+        //                throw 'invalid get sample for ' + name + ' - ' + port + ' - ' + sensor + ' - ' + slot;
+        //        }
 
-        //        s.push( WEDO.getSensorValue( brickid, sensorName, port, slot ) );
+        s.push( this.getSensorValue( sensorName, port, slot, mode ) );
+    }
+
+    public getSensorValue( sensorName: string, port: any, slot: any, mode: string ): any {
+        return this.hardwareState.sensors[sensorName];
     }
 
     public timerReset( port: number ) {
@@ -151,10 +155,10 @@ export class RobotMbedBehaviour extends ARobotBehaviour {
         return 0;
     }
 
-    public writePinAction( pin: any, mode: string, value:number ): void {
-        this.hardwareState.actions["pin"+pin] = {};
-        this.hardwareState.actions["pin"+pin][mode] = {};
-        this.hardwareState.actions["pin"+pin][mode] = value;
+    public writePinAction( pin: any, mode: string, value: number ): void {
+        this.hardwareState.actions["pin" + pin] = {};
+        this.hardwareState.actions["pin" + pin][mode] = {};
+        this.hardwareState.actions["pin" + pin][mode] = value;
     }
 
 

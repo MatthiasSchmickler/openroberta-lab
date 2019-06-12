@@ -18,27 +18,30 @@ define(["require", "exports", "interpreter.aRobotBehaviour", "interpreter.consta
             U.loggingEnabled(false, false);
             return _this;
         }
-        RobotMbedBehaviour.prototype.getSample = function (s, name, port, sensor, slot) {
-            var robotText = 'robot: ' + name + ', port: ' + port;
+        RobotMbedBehaviour.prototype.getSample = function (s, name, port, sensor, slot, mode) {
+            var robotText = 'robot: ' + name + ', port: ' + port + ', slot: ' + slot + ', mode: ' + mode;
             U.debug(robotText + ' getsample from ' + sensor);
             var sensorName;
-            switch (sensor) {
-                case "infrared":
-                    sensorName = "motionsensor";
-                    break;
-                case "gyro":
-                    sensorName = "tiltsensor";
-                    break;
-                case "buttons":
-                    sensorName = "button";
-                    break;
-                case C.TIMER:
-                    s.push(this.timerGet(port));
-                    return;
-                default:
-                    throw 'invalid get sample for ' + name + ' - ' + port + ' - ' + sensor + ' - ' + slot;
-            }
-            //        s.push( WEDO.getSensorValue( brickid, sensorName, port, slot ) );
+            //        switch ( sensor ) {
+            //            case "infrared":
+            //                sensorName = "motionsensor";
+            //                break;
+            //            case "gyro":
+            //                sensorName = "tiltsensor";
+            //                break;
+            //            case "buttons":
+            //                sensorName = "button";
+            //                break;
+            //            case C.TIMER:
+            //                s.push( this.timerGet( port ) );
+            //                return;
+            //            default:
+            //                throw 'invalid get sample for ' + name + ' - ' + port + ' - ' + sensor + ' - ' + slot;
+            //        }
+            s.push(this.getSensorValue(sensorName, port, slot, mode));
+        };
+        RobotMbedBehaviour.prototype.getSensorValue = function (sensorName, port, slot, mode) {
+            return this.hardwareState.sensors[sensorName];
         };
         RobotMbedBehaviour.prototype.timerReset = function (port) {
             //        this.timers[port] = Date.now();
