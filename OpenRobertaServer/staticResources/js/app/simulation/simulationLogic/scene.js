@@ -695,15 +695,18 @@ define(['simulation.simulation', 'simulation.math', 'util', 'robertaLogic.consta
                 values.volume = this.robots[r].webAudio.volume * 100;
             }
             if (this.robots[r].sound) {
-                values.sound = UTIL.round(this.robots[r].sound.volume * 100, 0);
+                values.sound = {};
+                values.sound.volume = UTIL.round(this.robots[r].sound.volume * 100, 0);
             }
             if (this.robots[r].display) {
-                values.ambientlight = this.robots[r].display.lightLevel;
-                values.brightness = this.robots[r].display.brightness;
-                values.pixel = this.robots[r].display.leds;
+                values.light = {};
+                values.light.ambientlight = this.robots[r].display.lightLevel;
+                values.light.brightness = this.robots[r].display.brightness;
+                values.light.pixel = this.robots[r].display.leds;
             }
             if (this.robots[r].temperature) {
-                values.temperature = this.robots[r].temperature.degree;
+                values.temperature = {};
+                values.temperature.value = this.robots[r].temperature.degree;
             }
             if (this.robots[r].gesture) {
                 values.gesture = {};
@@ -712,12 +715,13 @@ define(['simulation.simulation', 'simulation.math', 'util', 'robertaLogic.consta
                 }
             }
             if (this.robots[r].compass) {
-                values.compass = this.robots[r].compass.degree;
+                values.compass = {};
+                values.compass.angle = this.robots[r].compass.degree;
             }
             for (var i = 0; i < 4; i++) {
                 if (this.robots[r]['pin' + i]) {
                     values['pin' + i] = {};
-                    values['pin' + i].touched = this.robots[r]['pin' + i].touched;
+                    values['pin' + i].pressed = this.robots[r]['pin' + i].touched;
                     if (this.robots[r]['pin' + i].digitalIn != undefined) {
                         values['pin' + i].digital = this.robots[r]['pin' + i].digitalIn;
                     } else if (this.robots[r]['pin' + i].analogIn != undefined) {

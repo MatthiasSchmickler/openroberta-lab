@@ -170,7 +170,7 @@ public class C {
     public static final String NUMBER = "NUMBER";
     public static final String NUMERIC = "Numeric";
     public static final String NUM_CONST = "NUM_CONST";
-    public static final String OFF = "OFF";
+    public static final String OFF = "off";
     public static final String ON = "ON";
     public static final String OP = "op";
     public static final String OPS = "ops";
@@ -251,6 +251,7 @@ public class C {
     public static final String THEN_STMTS = "thenStmts";
     public static final String TIME = "time";
     public static final String TIMER = "timer";
+    public static final String TIMES = "times";
     public static final String TIMER_SENSOR_RESET = "createResetTimer";
     public static final String TONE_ACTION = "ToneAction";
     public static final String TOUCH = "touch";

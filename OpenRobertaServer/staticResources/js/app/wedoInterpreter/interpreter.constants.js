@@ -168,7 +168,7 @@ define(["require", "exports"], function (require, exports) {
     exports.NUMBER = "NUMBER";
     exports.NUMERIC = "Numeric";
     exports.NUM_CONST = "NUM_CONST";
-    exports.OFF = "OFF";
+    exports.OFF = "off";
     exports.ON = "ON";
     exports.OP = "op";
     exports.OPS = "ops";
@@ -247,6 +247,7 @@ define(["require", "exports"], function (require, exports) {
     exports.THEN_LIST = "thenList";
     exports.THEN_STMTS = "thenStmts";
     exports.TIME = "time";
+    exports.TIMES = "times";
     exports.TIMER = "timer";
     exports.TIMER_SENSOR_RESET = "createResetTimer";
     exports.TONE_ACTION = "ToneAction";

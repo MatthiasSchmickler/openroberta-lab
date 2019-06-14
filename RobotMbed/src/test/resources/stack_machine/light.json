@@ -13,7 +13,9 @@
 			"opc": "ledOnAction"
 		},
 		{
-			"opc": "ledOffAction"
+			"opc": "statusLightAction",
+			"port": "internal",
+			"name": "calliope"
 		}
 	],
 	"functionDeclaration": {

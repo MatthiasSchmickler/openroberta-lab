@@ -121,7 +121,7 @@ define(["require", "exports", "interpreter.aRobotBehaviour", "interpreter.consta
             U.debug('clear display');
             this.toDisplayFct({ "clear": true });
         };
-        RobotWeDoBehaviour.prototype.getSample = function (s, name, port, sensor, slot) {
+        RobotWeDoBehaviour.prototype.getSample = function (s, name, sensor, port, slot) {
             var robotText = 'robot: ' + name + ', port: ' + port;
             U.info(robotText + ' getsample called for ' + sensor);
             var sensorName;

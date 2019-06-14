@@ -1,174 +1,195 @@
 {
 	"ops": [
 		{
+			"GetSample": "buttons",
 			"opc": "GetSample",
 			"port": "A",
-			"sensorType": "buttons"
+			"name": "calliope"
 		},
 		{
 			"mode": "text",
 			"opc": "ShowTextAction"
 		},
 		{
+			"GetSample": "buttons",
 			"opc": "GetSample",
 			"port": "B",
-			"sensorType": "buttons"
+			"name": "calliope"
 		},
 		{
 			"mode": "text",
 			"opc": "ShowTextAction"
 		},
 		{
+			"GetSample": "pin0",
 			"opc": "GetSample",
-			"port": "0",
-			"sensorType": "pin"
+			"port": "pressed",
+			"name": "calliope"
 		},
 		{
 			"mode": "text",
 			"opc": "ShowTextAction"
 		},
 		{
+			"GetSample": "pin1",
+			"opc": "GetSample",
+			"port": "pressed",
+			"name": "calliope"
+		},
+		{
+			"mode": "text",
+			"opc": "ShowTextAction"
+		},
+		{
+			"GetSample": "pin2",
+			"opc": "GetSample",
+			"port": "pressed",
+			"name": "calliope"
+		},
+		{
+			"mode": "text",
+			"opc": "ShowTextAction"
+		},
+		{
+			"GetSample": "pin3",
+			"opc": "GetSample",
+			"port": "pressed",
+			"name": "calliope"
+		},
+		{
+			"mode": "text",
+			"opc": "ShowTextAction"
+		},
+		{
+			"GetSample": "gesture",
+			"opc": "GetSample",
+			"port": "up",
+			"name": "calliope"
+		},
+		{
+			"mode": "text",
+			"opc": "ShowTextAction"
+		},
+		{
+			"GetSample": "gesture",
+			"opc": "GetSample",
+			"port": "down",
+			"name": "calliope"
+		},
+		{
+			"mode": "text",
+			"opc": "ShowTextAction"
+		},
+		{
+			"GetSample": "gesture",
+			"opc": "GetSample",
+			"port": "face_down",
+			"name": "calliope"
+		},
+		{
+			"mode": "text",
+			"opc": "ShowTextAction"
+		},
+		{
+			"GetSample": "gesture",
+			"opc": "GetSample",
+			"port": "face_up",
+			"name": "calliope"
+		},
+		{
+			"mode": "text",
+			"opc": "ShowTextAction"
+		},
+		{
+			"GetSample": "gesture",
+			"opc": "GetSample",
+			"port": "shake",
+			"name": "calliope"
+		},
+		{
+			"mode": "text",
+			"opc": "ShowTextAction"
+		},
+		{
+			"GetSample": "gesture",
+			"opc": "GetSample",
+			"port": "freefall",
+			"name": "calliope"
+		},
+		{
+			"mode": "text",
+			"opc": "ShowTextAction"
+		},
+		{
+			"GetSample": "sound",
+			"opc": "GetSample",
+			"port": "volume",
+			"name": "calliope"
+		},
+		{
+			"mode": "text",
+			"opc": "ShowTextAction"
+		},
+		{
+			"GetSample": "compass",
+			"opc": "GetSample",
+			"port": "angle",
+			"name": "calliope"
+		},
+		{
+			"mode": "text",
+			"opc": "ShowTextAction"
+		},
+		{
+			"GetSample": "timer",
 			"opc": "GetSample",
 			"port": "1",
-			"sensorType": "pin"
+			"name": "calliope"
 		},
 		{
 			"mode": "text",
 			"opc": "ShowTextAction"
 		},
 		{
-			"opc": "GetSample",
-			"port": "2",
-			"sensorType": "pin"
-		},
-		{
-			"mode": "text",
-			"opc": "ShowTextAction"
-		},
-		{
-			"opc": "GetSample",
-			"port": "3",
-			"sensorType": "pin"
-		},
-		{
-			"mode": "text",
-			"opc": "ShowTextAction"
-		},
-		{
-			"opc": "GetSample",
-			"port": "UP",
-			"sensorType": "gesture"
-		},
-		{
-			"mode": "text",
-			"opc": "ShowTextAction"
-		},
-		{
-			"opc": "GetSample",
-			"port": "DOWN",
-			"sensorType": "gesture"
-		},
-		{
-			"mode": "text",
-			"opc": "ShowTextAction"
-		},
-		{
-			"opc": "GetSample",
-			"port": "FACE_DOWN",
-			"sensorType": "gesture"
-		},
-		{
-			"mode": "text",
-			"opc": "ShowTextAction"
-		},
-		{
-			"opc": "GetSample",
-			"port": "FACE_UP",
-			"sensorType": "gesture"
-		},
-		{
-			"mode": "text",
-			"opc": "ShowTextAction"
-		},
-		{
-			"opc": "GetSample",
-			"port": "SHAKE",
-			"sensorType": "gesture"
-		},
-		{
-			"mode": "text",
-			"opc": "ShowTextAction"
-		},
-		{
-			"opc": "GetSample",
-			"port": "FREEFALL",
-			"sensorType": "gesture"
-		},
-		{
-			"mode": "text",
-			"opc": "ShowTextAction"
-		},
-		{
-			"opc": "GetSample",
-			"sensorType": "sound"
-		},
-		{
-			"mode": "text",
-			"opc": "ShowTextAction"
-		},
-		{
-			"opc": "GetSample",
-			"sensorType": "compass"
-		},
-		{
-			"mode": "text",
-			"opc": "ShowTextAction"
-		},
-		{
-			"opc": "GetSample",
+			"opc": "createResetTimer",
 			"port": "1",
-			"sensorType": "timer"
+			"name": "calliope"
+		},
+		{
+			"GetSample": "temperature",
+			"opc": "GetSample",
+			"port": "value",
+			"name": "calliope"
 		},
 		{
 			"mode": "text",
 			"opc": "ShowTextAction"
 		},
 		{
+			"GetSample": "light",
 			"opc": "GetSample",
-			"port": "1",
-			"sensorType": "createResetTimer"
-		},
-		{
-			"opc": "GetSample",
-			"sensorType": "temperature"
+			"port": "ambientlight",
+			"name": "calliope"
 		},
 		{
 			"mode": "text",
 			"opc": "ShowTextAction"
 		},
 		{
+			"GetSample": "pin1",
 			"opc": "GetSample",
-			"sensorType": "light"
+			"port": "analog",
+			"name": "calliope"
 		},
 		{
 			"mode": "text",
 			"opc": "ShowTextAction"
 		},
 		{
-			"mode": "ANALOG",
+			"GetSample": "pin0",
 			"opc": "GetSample",
-			"port": "1",
-			"sensorType": "pin"
-		},
-		{
-			"mode": "text",
-			"opc": "ShowTextAction"
-		},
-		{
-			"mode": "DIGITAL",
-			"opc": "GetSample",
-			"port": "0",
-			"sensorType": "pin"
+			"port": "digital",
+			"name": "calliope"
 		},
 		{
 			"mode": "text",

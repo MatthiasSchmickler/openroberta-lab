@@ -176,10 +176,12 @@ define( ['simulation.simulation', 'robertaLogic.constants', 'simulation.robot.mb
         var actions = state.actions;
         // update debug
         if ( actions.led ) {
-            if ( actions.led.color ) {
-                this.led.color = actions.led.color;
+            const color = this.robotBehaviour.getActionState( "led", "color", true );
+            if ( color ) {
+                this.led.color = color;
             } else {
-                if ( actions.led.mode && actions.led.mode == 'OFF' )
+                const mode = this.robotBehaviour.getActionState( "led", "mode", true );
+                if ( mode != undefined && mode == 'off' )
                     this.led.color = 'grey';
             }
         }
@@ -191,7 +193,7 @@ define( ['simulation.simulation', 'robertaLogic.constants', 'simulation.robot.mb
             var ts = this.webAudio.context.currentTime;
             const frequency = this.robotBehaviour.getActionState( "tone", "frequency", true );
             const duration = this.robotBehaviour.getActionState( "tone", "duration", true );
-            if ( frequency != undefined) {
+            if ( frequency != undefined ) {
                 this.webAudio.oscillator.frequency.setValueAtTime( frequency, ts );
                 this.webAudio.gainNode.gain.setValueAtTime( this.webAudio.volume, ts );
             }
@@ -212,7 +214,7 @@ define( ['simulation.simulation', 'robertaLogic.constants', 'simulation.robot.mb
             }
             var powerA = this.robotBehaviour.getActionState( "motors", "a", true );
             var powerB = this.robotBehaviour.getActionState( "motors", "b", true );
-            if ( powerA != undefined) {
+            if ( powerA != undefined ) {
                 this.motorA.power = actions.motors.a;
                 clearTimeout( this.motorA.timeout );
                 var leftSpeed = powerA > 100 ? 100 : powerA;
@@ -221,7 +223,7 @@ define( ['simulation.simulation', 'robertaLogic.constants', 'simulation.robot.mb
                     f( leftSpeed, that );
                 }
             }
-            if ( powerB != undefined) {
+            if ( powerB != undefined ) {
                 this.motorB.power = powerB;
                 clearTimeout( this.motorB.timeout );
                 var RightSpeed = powerB > 100 ? 100 : powerB;

@@ -120,7 +120,7 @@ export class RobotWeDoBehaviour extends ARobotBehaviour {
         this.toDisplayFct( { "clear": true } );
     }
 
-    public getSample( s: State, name: string, port: number, sensor: string, slot: string ) {
+    public getSample( s: State, name: string, sensor: string, port: number, slot: string ) {
         var robotText = 'robot: ' + name + ', port: ' + port;
         U.info( robotText + ' getsample called for ' + sensor );
         var sensorName;

@@ -23,6 +23,9 @@ import de.fhg.iais.roberta.syntax.action.mbed.DisplaySetPixelAction;
 import de.fhg.iais.roberta.syntax.action.mbed.DisplayTextAction;
 import de.fhg.iais.roberta.syntax.action.mbed.LedOnAction;
 import de.fhg.iais.roberta.syntax.action.mbed.PinSetPullAction;
+import de.fhg.iais.roberta.syntax.action.mbed.RadioReceiveAction;
+import de.fhg.iais.roberta.syntax.action.mbed.RadioSendAction;
+import de.fhg.iais.roberta.syntax.action.mbed.RadioSetChannelAction;
 import de.fhg.iais.roberta.syntax.action.mbed.SingleMotorOnAction;
 import de.fhg.iais.roberta.syntax.action.mbed.SingleMotorStopAction;
 import de.fhg.iais.roberta.syntax.action.mbed.SwitchLedMatrixAction;
@@ -44,6 +47,8 @@ import de.fhg.iais.roberta.syntax.sensor.generic.AccelerometerSensor;
 import de.fhg.iais.roberta.syntax.sensor.generic.CompassSensor;
 import de.fhg.iais.roberta.syntax.sensor.generic.GestureSensor;
 import de.fhg.iais.roberta.syntax.sensor.generic.GyroSensor;
+import de.fhg.iais.roberta.syntax.sensor.generic.HumiditySensor;
+import de.fhg.iais.roberta.syntax.sensor.generic.InfraredSensor;
 import de.fhg.iais.roberta.syntax.sensor.generic.KeysSensor;
 import de.fhg.iais.roberta.syntax.sensor.generic.LightSensor;
 import de.fhg.iais.roberta.syntax.sensor.generic.PinGetValueSensor;
@@ -51,6 +56,8 @@ import de.fhg.iais.roberta.syntax.sensor.generic.PinTouchSensor;
 import de.fhg.iais.roberta.syntax.sensor.generic.SoundSensor;
 import de.fhg.iais.roberta.syntax.sensor.generic.TemperatureSensor;
 import de.fhg.iais.roberta.syntax.sensor.generic.TimerSensor;
+import de.fhg.iais.roberta.syntax.sensor.generic.UltrasonicSensor;
+import de.fhg.iais.roberta.syntax.sensor.mbed.RadioRssiSensor;
 import de.fhg.iais.roberta.util.dbc.Assert;
 import de.fhg.iais.roberta.visitor.C;
 import de.fhg.iais.roberta.visitor.hardware.IMbedVisitor;
@@ -142,7 +149,7 @@ public class MbedStackMachineVisitor<V> extends AbstractStackMachineVisitor<V> i
 
     @Override
     public V visitLightStatusAction(LightStatusAction<V> lightStatusAction) {
-        JSONObject o = mk(C.LED_OFF_ACTION);
+        JSONObject o = mk(C.STATUS_LIGHT_ACTION).put(C.NAME, "calliope").put(C.PORT, "internal");
         return app(o);
     }
 
@@ -222,57 +229,61 @@ public class MbedStackMachineVisitor<V> extends AbstractStackMachineVisitor<V> i
     @Override
     public V visitGestureSensor(GestureSensor<V> gestureSensor) {
         String mode = gestureSensor.getMode();
-        JSONObject o = mk(C.GET_SAMPLE).put(C.PORT.toLowerCase(), mode).put(C.SENSOR_TYPE, C.GESTURE);
+        JSONObject o = mk(C.GET_SAMPLE).put(C.GET_SAMPLE, C.GESTURE).put(C.PORT, mode.toLowerCase()).put(C.NAME, "calliope");
         return app(o);
     }
 
     @Override
     public V visitTemperatureSensor(TemperatureSensor<V> temperatureSensor) {
-        JSONObject o = mk(C.GET_SAMPLE).put(C.SENSOR_TYPE, C.TEMPERATURE);
+        String mode = temperatureSensor.getMode();
+        JSONObject o = mk(C.GET_SAMPLE).put(C.GET_SAMPLE, C.TEMPERATURE).put(C.PORT, mode.toLowerCase()).put(C.NAME, "calliope");
         return app(o);
     }
 
     @Override
     public V visitKeysSensor(KeysSensor<V> keysSensor) {
         String port = keysSensor.getPort();
-        JSONObject o = mk(C.GET_SAMPLE).put(C.PORT.toLowerCase(), port).put(C.SENSOR_TYPE, C.BUTTONS);
+        JSONObject o = mk(C.GET_SAMPLE).put(C.GET_SAMPLE, C.BUTTONS).put(C.PORT, port).put(C.NAME, "calliope");
         return app(o);
     }
 
     @Override
     public V visitLightSensor(LightSensor<V> lightSensor) {
-        JSONObject o = mk(C.GET_SAMPLE).put(C.SENSOR_TYPE, C.LIGHT);
+        JSONObject o = mk(C.GET_SAMPLE).put(C.GET_SAMPLE, C.LIGHT).put(C.PORT, C.AMBIENTLIGHT).put(C.NAME, "calliope");
         return app(o);
     }
 
     @Override
     public V visitTimerSensor(TimerSensor<V> timerSensor) {
         String port = timerSensor.getPort();
-        String mode = C.TIMER_SENSOR_RESET;
+        JSONObject o;
         if ( timerSensor.getMode().equals(SC.DEFAULT) || timerSensor.getMode().equals(SC.VALUE) ) {
-            mode = C.TIMER;
+            o = mk(C.GET_SAMPLE).put(C.GET_SAMPLE, C.TIMER).put(C.PORT, port).put(C.NAME, "calliope");
+        } else {
+            o = mk(C.TIMER_SENSOR_RESET).put(C.PORT, port).put(C.NAME, "calliope");
         }
-        JSONObject o = mk(C.GET_SAMPLE).put(C.PORT, port).put(C.SENSOR_TYPE, mode);
         return app(o);
     }
 
     @Override
     public V visitPinTouchSensor(PinTouchSensor<V> sensorGetSample) {
         String port = sensorGetSample.getPort();
-        String slot = sensorGetSample.getSlot();
-        JSONObject o = mk(C.GET_SAMPLE).put(C.PORT, port).put(C.GET_SAMPLE, C.PIN).put(C.NAME, "calliope").put(C.SLOT, slot);
+        String mode = sensorGetSample.getMode();
+
+        JSONObject o = mk(C.GET_SAMPLE).put(C.GET_SAMPLE, C.PIN + port).put(C.PORT, mode.toLowerCase()).put(C.NAME, "calliope");
         return app(o);
     }
 
     @Override
     public V visitSoundSensor(SoundSensor<V> soundSensor) {
-        JSONObject o = mk(C.GET_SAMPLE).put(C.SENSOR_TYPE, C.SOUND);
+        JSONObject o = mk(C.GET_SAMPLE).put(C.GET_SAMPLE, C.SOUND).put(C.PORT, C.VOLUME).put(C.NAME, "calliope");
         return app(o);
     }
 
     @Override
     public V visitCompassSensor(CompassSensor<V> compassSensor) {
-        JSONObject o = mk(C.GET_SAMPLE).put(C.SENSOR_TYPE, C.COMPASS);
+        String mode = compassSensor.getMode();
+        JSONObject o = mk(C.GET_SAMPLE).put(C.GET_SAMPLE, C.COMPASS).put(C.PORT, mode.toLowerCase()).put(C.NAME, "calliope");
         return app(o);
     }
 
@@ -286,9 +297,10 @@ public class MbedStackMachineVisitor<V> extends AbstractStackMachineVisitor<V> i
     @Override
     public V visitPinGetValueSensor(PinGetValueSensor<V> pinValueSensor) {
         String port = pinValueSensor.getPort();
-        String slot = pinValueSensor.getSlot().toLowerCase();
-        String mode = pinValueSensor.getMode().toLowerCase();
-        JSONObject o = mk(C.GET_SAMPLE).put(C.PORT, port).put(C.GET_SAMPLE, C.PIN).put(C.NAME, "calliope").put(C.SLOT, slot).put(C.MODE, mode);
+        String mode = pinValueSensor.getMode();
+
+        JSONObject o = mk(C.GET_SAMPLE).put(C.GET_SAMPLE, C.PIN + port).put(C.PORT, mode.toLowerCase()).put(C.NAME, "calliope");
+
         return app(o);
     }
 
@@ -385,6 +397,41 @@ public class MbedStackMachineVisitor<V> extends AbstractStackMachineVisitor<V> i
 
     @Override
     public V visitLightAction(LightAction<V> lightAction) {
+        return null;
+    }
+
+    @Override
+    public V visitRadioSendAction(RadioSendAction<V> radioSendAction) {
+        return null;
+    }
+
+    @Override
+    public V visitRadioReceiveAction(RadioReceiveAction<V> radioReceiveAction) {
+        return null;
+    }
+
+    @Override
+    public V visitRadioSetChannelAction(RadioSetChannelAction<V> radioSetChannelAction) {
+        return null;
+    }
+
+    @Override
+    public V visitRadioRssiSensor(RadioRssiSensor<V> radioRssiSensor) {
+        return null;
+    }
+
+    @Override
+    public V visitHumiditySensor(HumiditySensor<V> humiditySensor) {
+        return null;
+    }
+
+    @Override
+    public V visitInfraredSensor(InfraredSensor<V> infraredSensor) {
+        return null;
+    }
+
+    @Override
+    public V visitUltrasonicSensor(UltrasonicSensor<V> ultrasonicSensor) {
         return null;
     }
 

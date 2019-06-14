@@ -5,6 +5,7 @@ define(["require", "exports"], function (require, exports) {
         function ARobotBehaviour() {
             this.hardwareState = {};
             this.hardwareState.timers = {};
+            this.hardwareState.timers['start'] = Date.now();
             this.hardwareState.actions = {};
             this.hardwareState.sensors = {};
         }
@@ -15,9 +16,6 @@ define(["require", "exports"], function (require, exports) {
                 delete this.hardwareState.actions[actionType][mode];
             }
             return v;
-        };
-        ARobotBehaviour.prototype.updateSensorState = function (state) {
-            this.hardwareState.sensors = state;
         };
         return ARobotBehaviour;
     }());

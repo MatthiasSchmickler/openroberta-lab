@@ -12,36 +12,38 @@ export class RobotMbedBehaviour extends ARobotBehaviour {
     }
 
 
-    public getSample( s: State, name: string, port: number, sensor: string, slot: string ) {
-        var robotText = 'robot: ' + name + ', port: ' + port + ', slot: ' + slot;
+    public getSample( s: State, name: string, sensor: string, port: any, slot: string ) {
+        var robotText = 'robot: ' + name + ', port: ' + port;
         U.debug( robotText + ' getsample from ' + sensor );
-        var sensorName;
-        //        switch ( sensor ) {
-        //            case "infrared":
-        //                sensorName = "motionsensor";
-        //                break;
-        //            case "gyro":
-        //                sensorName = "tiltsensor";
-        //                break;
-        //            case "buttons":
-        //                sensorName = "button";
-        //                break;
-        //            case C.TIMER:
-        //                s.push( this.timerGet( port ) );
-        //                return;
-        //            default:
-        //                throw 'invalid get sample for ' + name + ' - ' + port + ' - ' + sensor + ' - ' + slot;
-        //        }
+        var sensorName = sensor;
 
-        s.push( this.getSensorValue( sensorName, port, slot, mode ) );
+        if ( sensorName == C.TIMER ) {
+            s.push( this.timerGet( port ) );
+        } else {
+            s.push( this.getSensorValue( sensorName, port ) );
+        }
+
     }
 
-    private getSensorValue( sensorName: string, port: any, slot: any, mode: string ): any {
-        return this.hardwareState.sensors[sensorName];
+    private getSensorValue( sensorName: string, mode: string ): any {
+        const sensor = this.hardwareState.sensors[sensorName];
+        if (sensor === undefined) {
+            return "undefined";
+        }
+        if ( mode != undefined ) {
+            const v = sensor[mode];
+            if ( v === undefined ) {
+                return "undefined";
+            }
+            else {
+                return v;
+            }
+        }
+        return sensor;
     }
 
     public timerReset( port: number ) {
-        //        this.timers[port] = Date.now();
+        this.hardwareState.timers[port] = Date.now();
         U.debug( 'timerReset for ' + port );
     }
 
@@ -64,11 +66,11 @@ export class RobotMbedBehaviour extends ARobotBehaviour {
     }
 
     public statusLightOffAction( name: string, port: number ) {
-        //        var brickid = WEDO.getBrickIdByName( name );
         const robotText = 'robot: ' + name + ', port: ' + port;
         U.debug( robotText + ' led off' );
-        //        const cmd = { 'target': 'wedo', 'type': 'command', 'actuator': 'light', 'brickid': brickid, 'color': 0 };
-        //        WEBVIEW_C.jsToAppInterface( cmd );
+        this.hardwareState.actions.led = {};
+        this.hardwareState.actions.led.mode = C.OFF;
+
     }
 
     public toneAction( name: string, frequency: number, duration: number ): number {

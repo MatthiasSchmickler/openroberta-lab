@@ -136,7 +136,7 @@ export class Interpreter {
                     break;
                 }
                 case C.GET_SAMPLE: {
-                    n.getSample( s, stmt[C.NAME], stmt[C.PORT], stmt[C.GET_SAMPLE], stmt[C.SLOT] )
+                    n.getSample( s, stmt[C.NAME], stmt[C.GET_SAMPLE], stmt[C.PORT], stmt[C.SLOT] )
                     break;
                 }
                 case C.IF_STMT:

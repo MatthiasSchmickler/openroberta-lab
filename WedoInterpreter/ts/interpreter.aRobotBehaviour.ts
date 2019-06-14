@@ -6,6 +6,7 @@ export abstract class ARobotBehaviour {
     constructor() {
         this.hardwareState = {};
         this.hardwareState.timers = {};
+        this.hardwareState.timers['start'] = Date.now();
         this.hardwareState.actions = {};
         this.hardwareState.sensors = {};
     }
@@ -20,7 +21,7 @@ export abstract class ARobotBehaviour {
     
 
     abstract clearDisplay(): void;
-    abstract getSample( s: State, name: string, port: number, sensor: string, slot: string ): void;
+    abstract getSample( s: State, name: string, sensor: string, port: number, slot: string ): void;
     abstract timerReset( port: number ): void;
     abstract timerGet( port: number ): number;
     abstract ledOnAction( name: string, port: number, color: number ): void;

@@ -18,33 +18,32 @@ define(["require", "exports", "interpreter.aRobotBehaviour", "interpreter.consta
             U.loggingEnabled(false, false);
             return _this;
         }
-        RobotMbedBehaviour.prototype.getSample = function (s, name, port, sensor, slot, mode) {
-            var robotText = 'robot: ' + name + ', port: ' + port + ', slot: ' + slot + ', mode: ' + mode;
+        RobotMbedBehaviour.prototype.getSample = function (s, name, sensor, port, slot) {
+            var robotText = 'robot: ' + name + ', port: ' + port;
             U.debug(robotText + ' getsample from ' + sensor);
-            var sensorName;
-            //        switch ( sensor ) {
-            //            case "infrared":
-            //                sensorName = "motionsensor";
-            //                break;
-            //            case "gyro":
-            //                sensorName = "tiltsensor";
-            //                break;
-            //            case "buttons":
-            //                sensorName = "button";
-            //                break;
-            //            case C.TIMER:
-            //                s.push( this.timerGet( port ) );
-            //                return;
-            //            default:
-            //                throw 'invalid get sample for ' + name + ' - ' + port + ' - ' + sensor + ' - ' + slot;
-            //        }
-            s.push(this.getSensorValue(sensorName, port, slot, mode));
+            var sensorName = sensor;
+            if (sensorName == C.TIMER) {
+                s.push(this.timerGet(port));
+            }
+            else {
+                s.push(this.getSensorValue(sensorName, port));
+            }
         };
-        RobotMbedBehaviour.prototype.getSensorValue = function (sensorName, port, slot, mode) {
-            return this.hardwareState.sensors[sensorName];
+        RobotMbedBehaviour.prototype.getSensorValue = function (sensorName, mode) {
+            var sensor = this.hardwareState.sensors[sensorName];
+            if (mode != undefined) {
+                var v = sensor[mode];
+                if (v === undefined) {
+                    return "undefined";
+                }
+                else {
+                    return v;
+                }
+            }
+            return sensor;
         };
         RobotMbedBehaviour.prototype.timerReset = function (port) {
-            //        this.timers[port] = Date.now();
+            this.hardwareState.timers[port] = Date.now();
             U.debug('timerReset for ' + port);
         };
         RobotMbedBehaviour.prototype.timerGet = function (port) {
@@ -64,11 +63,10 @@ define(["require", "exports", "interpreter.aRobotBehaviour", "interpreter.consta
             this.hardwareState.actions.led.color = color;
         };
         RobotMbedBehaviour.prototype.statusLightOffAction = function (name, port) {
-            //        var brickid = WEDO.getBrickIdByName( name );
             var robotText = 'robot: ' + name + ', port: ' + port;
             U.debug(robotText + ' led off');
-            //        const cmd = { 'target': 'wedo', 'type': 'command', 'actuator': 'light', 'brickid': brickid, 'color': 0 };
-            //        WEBVIEW_C.jsToAppInterface( cmd );
+            this.hardwareState.actions.led = {};
+            this.hardwareState.actions.led.mode = C.OFF;
         };
         RobotMbedBehaviour.prototype.toneAction = function (name, frequency, duration) {
             U.debug(name + ' piezo: ' + ', frequency: ' + frequency + ', duration: ' + duration);
