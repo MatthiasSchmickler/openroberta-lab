@@ -12,8 +12,8 @@ export class RobotMbedBehaviour extends ARobotBehaviour {
     }
 
 
-    public getSample( s: State, name: string, port: number, sensor: string, slot: string, mode: string ) {
-        var robotText = 'robot: ' + name + ', port: ' + port + ', slot: ' + slot + ', mode: ' + mode;
+    public getSample( s: State, name: string, port: number, sensor: string, slot: string ) {
+        var robotText = 'robot: ' + name + ', port: ' + port + ', slot: ' + slot;
         U.debug( robotText + ' getsample from ' + sensor );
         var sensorName;
         //        switch ( sensor ) {
@@ -36,7 +36,7 @@ export class RobotMbedBehaviour extends ARobotBehaviour {
         s.push( this.getSensorValue( sensorName, port, slot, mode ) );
     }
 
-    public getSensorValue( sensorName: string, port: any, slot: any, mode: string ): any {
+    private getSensorValue( sensorName: string, port: any, slot: any, mode: string ): any {
         return this.hardwareState.sensors[sensorName];
     }
 
