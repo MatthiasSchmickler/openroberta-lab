@@ -1,7 +1,6 @@
 define(["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.ADD = "ADD";
     exports.AMBIENTLIGHT = "ambientlight";
     exports.ANALOG = "analog";
     exports.AND = "AND";
@@ -22,6 +21,7 @@ define(["require", "exports"], function (require, exports) {
     exports.BOOL_CONST = "BOOL_CONST";
     exports.BREAK = "break";
     exports.BRIGHTNESS = "brightness";
+    exports.BRIGHTNESS_MULTIPLIER = 28.3333;
     exports.BOTH_MOTORS_ON_ACTION = "bothMotorsOnAction";
     exports.BUTTONS = "buttons";
     exports.BUTTON_A = "A";
@@ -47,11 +47,12 @@ define(["require", "exports"], function (require, exports) {
     exports.DEGREE = "degree";
     exports.DIGITAL = "digital";
     exports.DIRECTION = "direction";
+    exports.DISPLAY = "display";
     exports.DISPLAY_GET_BRIGHTNESS_ACTION = "displayGetBrightnessAction";
-    exports.DISPLAY_GET_PIXEL_ACTION = "displayGetPixelAction";
+    exports.DISPLAY_GET_PIXEL_BRIGHTNESS_ACTION = "displayGetPixelBrightnessAction";
     exports.DISPLAY_IMAGE_ACTION = "DisplayImageAction";
     exports.DISPLAY_SET_BRIGHTNESS_ACTION = "displaySetBrightnessAction";
-    exports.DISPLAY_SET_PIXEL_ACTION = "displaySetPixelAction";
+    exports.DISPLAY_SET_PIXEL_BRIGHTNESS_ACTION = "displaySetPixelBrightnessAction";
     exports.DISPLAY_TEXT_ACTION = "displayTextAction";
     exports.DISTANCE = "distance";
     exports.DIVIDE = "DIVIDE";
@@ -247,8 +248,8 @@ define(["require", "exports"], function (require, exports) {
     exports.THEN_LIST = "thenList";
     exports.THEN_STMTS = "thenStmts";
     exports.TIME = "time";
-    exports.TIMES = "times";
     exports.TIMER = "timer";
+    exports.TIMES = "times";
     exports.TIMER_SENSOR_RESET = "createResetTimer";
     exports.TONE_ACTION = "ToneAction";
     exports.TOUCH = "touch";

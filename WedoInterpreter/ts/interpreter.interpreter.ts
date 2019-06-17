@@ -227,13 +227,18 @@ export class Interpreter {
                     const b = s.pop();
                     return n.displaySetBrightnessAction( b );
                 }
-                case C.DISPLAY_SET_PIXEL_ACTION: {
+                case C.DISPLAY_SET_PIXEL_BRIGHTNESS_ACTION: {
                     const b = s.pop();
                     const y = s.pop();
                     const x = s.pop();
-                    return n.displaySetPixelAction( x, y, b );
+                    return n.displaySetPixelBrightnessAction( x, y, b );
                 }
-
+                case C.DISPLAY_GET_PIXEL_BRIGHTNESS_ACTION: {
+                    const y = s.pop();
+                    const x = s.pop();
+                    n.displayGetPixelBrightnessAction(s, x, y );
+                    break;
+                }
                 case C.STATUS_LIGHT_ACTION:
                     n.statusLightOffAction( stmt[C.NAME], stmt[C.PORT] )
                     break;
@@ -271,10 +276,10 @@ export class Interpreter {
                 }
                 case C.WRITE_PIN_ACTION: {
                     const value = s.pop();
-                    const mode =  stmt[C.MODE];
+                    const mode = stmt[C.MODE];
                     const pin = stmt[C.PIN];
-                    
-                    n.writePinAction(pin, mode, value);
+
+                    n.writePinAction( pin, mode, value );
                     return 0;
                 }
                 default:

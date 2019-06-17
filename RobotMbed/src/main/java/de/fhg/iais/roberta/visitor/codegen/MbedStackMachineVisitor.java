@@ -318,7 +318,7 @@ public class MbedStackMachineVisitor<V> extends AbstractStackMachineVisitor<V> i
 
     @Override
     public V visitDisplayGetBrightnessAction(DisplayGetBrightnessAction<V> displayGetBrightnessAction) {
-        JSONObject o = mk(C.DISPLAY_GET_BRIGHTNESS_ACTION);
+        JSONObject o = mk(C.GET_SAMPLE).put(C.GET_SAMPLE, C.DISPLAY).put(C.PORT, C.BRIGHTNESS).put(C.NAME, "calliope");
         return app(o);
     }
 
@@ -327,13 +327,15 @@ public class MbedStackMachineVisitor<V> extends AbstractStackMachineVisitor<V> i
         displaySetPixelAction.getX().visit(this);
         displaySetPixelAction.getY().visit(this);
         displaySetPixelAction.getBrightness().visit(this);
-        JSONObject o = mk(C.DISPLAY_SET_PIXEL_ACTION);
+        JSONObject o = mk(C.DISPLAY_SET_PIXEL_BRIGHTNESS_ACTION);
         return app(o);
     }
 
     @Override
     public V visitDisplayGetPixelAction(DisplayGetPixelAction<V> displayGetPixelAction) {
-        JSONObject o = mk(C.DISPLAY_GET_PIXEL_ACTION);
+        displayGetPixelAction.getX().visit(this);
+        displayGetPixelAction.getY().visit(this);
+        JSONObject o = mk(C.DISPLAY_GET_PIXEL_BRIGHTNESS_ACTION);
         return app(o);
     }
 

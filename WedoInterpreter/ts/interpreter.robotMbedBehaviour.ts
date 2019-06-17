@@ -27,7 +27,7 @@ export class RobotMbedBehaviour extends ARobotBehaviour {
 
     private getSensorValue( sensorName: string, mode: string ): any {
         const sensor = this.hardwareState.sensors[sensorName];
-        if (sensor === undefined) {
+        if ( sensor === undefined ) {
             return "undefined";
         }
         if ( mode != undefined ) {
@@ -140,7 +140,7 @@ export class RobotMbedBehaviour extends ARobotBehaviour {
         return 0;
     }
 
-    public displaySetPixelAction( x: number, y: number, brightness: number ): number {
+    public displaySetPixelBrightnessAction( x: number, y: number, brightness: number ): number {
         U.debug( '***** set pixel x="' + x + ", y=" + y + ", brightness=" + brightness + '" *****' );
         this.hardwareState.actions.display = {};
         this.hardwareState.actions.display[C.PIXEL] = {};
@@ -149,6 +149,13 @@ export class RobotMbedBehaviour extends ARobotBehaviour {
         this.hardwareState.actions.display[C.PIXEL][C.BRIGHTNESS] = brightness;
         return 0;
     }
+
+    public displayGetPixelBrightnessAction( s: State, x: number, y: number ): void {
+        U.debug( '***** get pixel x="' + x + ", y=" + y + '" *****' );
+        const sensor = this.hardwareState.sensors[C.DISPLAY][C.PIXEL];
+        s.push( sensor[y][x] );
+    }
+
 
     public clearDisplay(): number {
         U.debug( 'clear display' );

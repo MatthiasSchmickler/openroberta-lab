@@ -1,4 +1,4 @@
-define(['simulation.simulation', 'robertaLogic.constants', 'util'], function (SIM, CONSTANTS, UTIL) {
+define(['simulation.simulation', 'interpreter.constants', 'util'], function (SIM, C, UTIL) {
 
     /**
      * Creates a new mbed device for a simulation.
@@ -11,9 +11,7 @@ define(['simulation.simulation', 'robertaLogic.constants', 'util'], function (SI
     function Mbed(pose, num, robotBehaviour) {
         this.pose = pose;
         this.robotBehaviour = robotBehaviour;
-    }
-
-    var SET_BRIGHTNESS_MULTIPLIER = 28.3333;
+    } 
 
     Mbed.prototype.endless = true;
     Mbed.prototype.debug = true;
@@ -243,14 +241,16 @@ define(['simulation.simulation', 'robertaLogic.constants', 'util'], function (SI
                 this.display.leds = [[0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0]];
             }
             if (actions.display.pixel) {
-                if (0 <= actions.display.pixel.y == actions.display.pixel.y < this.display.leds.length && 0 <= actions.display.pixel.x == actions.display.pixel.x < this.display.leds[0].length) {
-                    this.display.leds[actions.display.pixel.y][actions.display.pixel.x] = actions.display.pixel.brightness * SET_BRIGHTNESS_MULTIPLIER;
+                const pixel = this.robotBehaviour.getActionState("display", "pixel", true);
+                
+                if (0 <= pixel.y == pixel.y < this.display.leds.length && 0 <= pixel.x == pixel.x < this.display.leds[0].length) {
+                    this.display.leds[pixel.y][pixel.x] = pixel.brightness * C.BRIGHTNESS_MULTIPLIER;
                 } else {
-                    if (0 <= actions.display.pixel.y != actions.display.pixel.y < this.display.leds.length) {
-                        console.warn('actions.display.pixel.y out of range: ' + actions.display.pixel.y);
+                    if (0 <= pixel.y != pixel.y < this.display.leds.length) {
+                        console.warn('actions.display.pixel.y out of range: ' + pixel.y);
                     }
-                    if (0 <= actions.display.pixel.x != actions.display.pixel.x < this.display.leds[0].length) {
-                        console.warn('actions.display.pixel.x out of range: ' + actions.display.pixel.x);
+                    if (0 <= pixel.x != pixel.x < this.display.leds[0].length) {
+                        console.warn('actions.display.pixel.x out of range: ' + pixel.x);
                     }
                 }
             }

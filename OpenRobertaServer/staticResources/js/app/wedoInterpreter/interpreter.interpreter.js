@@ -216,11 +216,17 @@ define(["require", "exports", "interpreter.state", "interpreter.constants", "int
                         var b = s.pop();
                         return n.displaySetBrightnessAction(b);
                     }
-                    case C.DISPLAY_SET_PIXEL_ACTION: {
+                    case C.DISPLAY_SET_PIXEL_BRIGHTNESS_ACTION: {
                         var b = s.pop();
                         var y = s.pop();
                         var x = s.pop();
-                        return n.displaySetPixelAction(x, y, b);
+                        return n.displaySetPixelBrightnessAction(x, y, b);
+                    }
+                    case C.DISPLAY_GET_PIXEL_BRIGHTNESS_ACTION: {
+                        var y = s.pop();
+                        var x = s.pop();
+                        n.displayGetPixelBrightnessAction(s, x, y);
+                        break;
                     }
                     case C.STATUS_LIGHT_ACTION:
                         n.statusLightOffAction(stmt[C.NAME], stmt[C.PORT]);

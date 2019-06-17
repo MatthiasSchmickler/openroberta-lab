@@ -33,7 +33,8 @@ export abstract class ARobotBehaviour {
     abstract showTextAction( text: any, mode: string ): number;
     abstract showImageAction( image: any, mode: string ): number;
     abstract displaySetBrightnessAction( value: number ): number;
-    abstract displaySetPixelAction( x: number, y: number, brightness: number ): number;
+    abstract displaySetPixelBrightnessAction( x: number, y: number, brightness: number ): number;
+    abstract displayGetPixelBrightnessAction(s: State, x: number, y: number ): void;
 
     abstract close(): void;
 }

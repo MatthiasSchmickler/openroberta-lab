@@ -31,6 +31,9 @@ define(["require", "exports", "interpreter.aRobotBehaviour", "interpreter.consta
         };
         RobotMbedBehaviour.prototype.getSensorValue = function (sensorName, mode) {
             var sensor = this.hardwareState.sensors[sensorName];
+            if (sensor === undefined) {
+                return "undefined";
+            }
             if (mode != undefined) {
                 var v = sensor[mode];
                 if (v === undefined) {
@@ -130,7 +133,7 @@ define(["require", "exports", "interpreter.aRobotBehaviour", "interpreter.consta
             this.hardwareState.actions.display[C.BRIGHTNESS] = value;
             return 0;
         };
-        RobotMbedBehaviour.prototype.displaySetPixelAction = function (x, y, brightness) {
+        RobotMbedBehaviour.prototype.displaySetPixelBrightnessAction = function (x, y, brightness) {
             U.debug('***** set pixel x="' + x + ", y=" + y + ", brightness=" + brightness + '" *****');
             this.hardwareState.actions.display = {};
             this.hardwareState.actions.display[C.PIXEL] = {};
@@ -138,6 +141,11 @@ define(["require", "exports", "interpreter.aRobotBehaviour", "interpreter.consta
             this.hardwareState.actions.display[C.PIXEL][C.Y] = y;
             this.hardwareState.actions.display[C.PIXEL][C.BRIGHTNESS] = brightness;
             return 0;
+        };
+        RobotMbedBehaviour.prototype.displayGetPixelBrightnessAction = function (s, x, y) {
+            U.debug('***** get pixel x="' + x + ", y=" + y + '" *****');
+            var sensor = this.hardwareState.sensors['display'][C.PIXEL];
+            s.push(sensor[y][x]);
         };
         RobotMbedBehaviour.prototype.clearDisplay = function () {
             U.debug('clear display');

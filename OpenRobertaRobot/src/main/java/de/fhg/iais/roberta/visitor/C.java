@@ -1,7 +1,6 @@
 package de.fhg.iais.roberta.visitor;
 
 public class C {
-    public static final String ADD = "ADD";
     public static final String AMBIENTLIGHT = "ambientlight";
     public static final String ANALOG = "analog";
     public static final String AND = "AND";
@@ -22,6 +21,7 @@ public class C {
     public static final String BOOL_CONST = "BOOL_CONST";
     public static final String BREAK = "break";
     public static final String BRIGHTNESS = "brightness";
+    public static final double BRIGHTNESS_MULTIPLIER = 28.3333;
     public static final String BOTH_MOTORS_ON_ACTION = "bothMotorsOnAction";
     public static final String BUTTONS = "buttons";
     public static final String BUTTON_A = "A";
@@ -47,11 +47,12 @@ public class C {
     public static final String DEGREE = "degree";
     public static final String DIGITAL = "digital";
     public static final String DIRECTION = "direction";
+    public static final String DISPLAY = "display";
     public static final String DISPLAY_GET_BRIGHTNESS_ACTION = "displayGetBrightnessAction";
-    public static final String DISPLAY_GET_PIXEL_ACTION = "displayGetPixelAction";
+    public static final String DISPLAY_GET_PIXEL_BRIGHTNESS_ACTION = "displayGetPixelBrightnessAction";
     public static final String DISPLAY_IMAGE_ACTION = "DisplayImageAction";
     public static final String DISPLAY_SET_BRIGHTNESS_ACTION = "displaySetBrightnessAction";
-    public static final String DISPLAY_SET_PIXEL_ACTION = "displaySetPixelAction";
+    public static final String DISPLAY_SET_PIXEL_BRIGHTNESS_ACTION = "displaySetPixelBrightnessAction";
     public static final String DISPLAY_TEXT_ACTION = "displayTextAction";
     public static final String DISTANCE = "distance";
     public static final String DIVIDE = "DIVIDE";
