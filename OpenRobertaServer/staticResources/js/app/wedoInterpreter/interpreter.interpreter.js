@@ -504,6 +504,91 @@ define(["require", "exports", "interpreter.state", "interpreter.constants", "int
                     }
                     break;
                 }
+                case C.LIST_OPERATION: {
+                    var subOp = expr[C.OP];
+                    switch (subOp) {
+                        case C.LIST_IS_EMPTY:
+                            s.push(s.pop().length == 0);
+                            break;
+                        case C.LIST_LENGTH:
+                            s.push(s.pop().length);
+                            break;
+                        case C.LIST_FIND_ITEM:
+                            {
+                                var item = s.pop();
+                                var list = s.pop();
+                                if (expr[C.POSITION] == C.FIRST) {
+                                    s.push(list.indexOf(item));
+                                }
+                                else {
+                                    s.push(list.lastIndexOf(item));
+                                }
+                            }
+                            break;
+                        case C.GET:
+                            {
+                                var position = expr[C.POSITION];
+                                var ix = void 0;
+                                var list = void 0;
+                                switch (position) {
+                                    case C.FROM_START:
+                                        ix = s.pop();
+                                        list = s.pop();
+                                        s.push(list[ix]);
+                                        break;
+                                    case C.FROM_END:
+                                        ix = s.pop();
+                                        list = s.pop();
+                                        s.push(list.slice(-(ix + 1))[0]);
+                                        break;
+                                    case C.FIRST:
+                                        list = s.pop();
+                                        s.push(list[0]);
+                                        break;
+                                    case C.LAST:
+                                        list = s.pop();
+                                        s.push(list.slice(-1)[0]);
+                                        break;
+                                    default:
+                                        throw "Invalid Position for List Manipulation";
+                                }
+                            }
+                            break;
+                        case C.GET_REMOVE:
+                            {
+                                var position = expr[C.POSITION];
+                                var ix = void 0;
+                                var list = void 0;
+                                switch (position) {
+                                    case C.FROM_START:
+                                        ix = s.pop();
+                                        list = s.pop();
+                                        s.push(list.splice(ix, 1)[0]);
+                                        break;
+                                    case C.FROM_END:
+                                        ix = s.pop();
+                                        list = s.pop();
+                                        ix = list.length - ix - 1;
+                                        s.push(list.splice(ix, 1)[0]);
+                                        break;
+                                    case C.FIRST:
+                                        list = s.pop();
+                                        s.push(list.shift());
+                                        break;
+                                    case C.LAST:
+                                        list = s.pop();
+                                        s.push(list.pop());
+                                        break;
+                                    default:
+                                        throw "Invalid Position for List Manipulation";
+                                }
+                            }
+                            break;
+                        default:
+                            throw "Invalid Op on List Function Name";
+                    }
+                    break;
+                }
                 case C.BINARY: {
                     var subOp = expr[C.OP];
                     var right = s.pop();

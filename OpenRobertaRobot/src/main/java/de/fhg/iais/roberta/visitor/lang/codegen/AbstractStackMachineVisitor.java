@@ -515,17 +515,21 @@ public abstract class AbstractStackMachineVisitor<V> implements ILanguageVisitor
 
     @Override
     public V visitIndexOfFunct(IndexOfFunct<V> indexOfFunct) {
-        throw new DbcException("Operation not supported");
+        indexOfFunct.getParam().forEach(x -> x.visit(this));
+        JSONObject o =
+            mk(C.EXPR).put(C.EXPR, C.LIST_OPERATION).put(C.OP, C.LIST_FIND_ITEM).put(C.POSITION, indexOfFunct.getLocation().toString().toLowerCase());
+        return app(o);
     }
 
     @Override
     public V visitLengthOfIsEmptyFunct(LengthOfIsEmptyFunct<V> lengthOfIsEmptyFunct) {
-        throw new DbcException("Operation not supported");
+        lengthOfIsEmptyFunct.getParam().get(0).visit(this);
+        JSONObject o = mk(C.EXPR).put(C.EXPR, C.LIST_OPERATION).put(C.OP, lengthOfIsEmptyFunct.getFunctName().toString().toLowerCase());
+        return app(o);
     }
 
     @Override
     public V visitListCreate(ListCreate<V> listCreate) {
-
         listCreate.getValue().visit(this);
         int n = listCreate.getValue().get().size();
 
@@ -535,12 +539,24 @@ public abstract class AbstractStackMachineVisitor<V> implements ILanguageVisitor
 
     @Override
     public V visitListSetIndex(ListSetIndex<V> listSetIndex) {
-        throw new DbcException("Operation not supported");
+        listSetIndex.getParam().forEach(x -> x.visit(this));
+        JSONObject o =
+            mk(C.EXPR)
+                .put(C.EXPR, C.LIST_OPERATION)
+                .put(C.OP, listSetIndex.getElementOperation().toString().toLowerCase())
+                .put(C.POSITION, listSetIndex.getLocation().toString().toLowerCase());
+        return app(o);
     }
 
     @Override
     public V visitListGetIndex(ListGetIndex<V> listGetIndex) {
-        throw new DbcException("Operation not supported");
+        listGetIndex.getParam().forEach(x -> x.visit(this));
+        JSONObject o =
+            mk(C.EXPR)
+                .put(C.EXPR, C.LIST_OPERATION)
+                .put(C.OP, listGetIndex.getElementOperation().toString().toLowerCase())
+                .put(C.POSITION, listGetIndex.getLocation().toString().toLowerCase());
+        return app(o);
     }
 
     @Override

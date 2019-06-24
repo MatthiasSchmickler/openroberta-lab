@@ -441,11 +441,97 @@ export class Interpreter {
                     case C.AVERAGE: s.push( this.mean( value ) ); break;
                     case C.MEDIAN: s.push( this.median( value ) ); break;
                     case C.STD_DEV: s.push( this.std( value ) ); break;
-                    case C.RANDOM: s.push( value[this.getRandomInt(value.length)]  ); break;
+                    case C.RANDOM: s.push( value[this.getRandomInt( value.length )] ); break;
 
                     default:
                         throw "Invalid Math on List Function Name";
                 }
+                break;
+            }
+            case C.LIST_OPERATION: {
+                const subOp = expr[C.OP];
+                switch ( subOp ) {
+                    case C.LIST_IS_EMPTY:
+                        s.push( s.pop().length == 0 );
+                        break;
+                    case C.LIST_LENGTH:
+                        s.push( s.pop().length );
+                        break;
+                    case C.LIST_FIND_ITEM: {
+                        const item = s.pop();
+                        const list = s.pop();
+                        if ( expr[C.POSITION] == C.FIRST ) {
+                            s.push( list.indexOf( item ) );
+                        } else {
+                            s.push( list.lastIndexOf( item ) );
+                        }
+                    }
+                        break;
+                    case C.GET: {
+                        const position = expr[C.POSITION];
+                        let ix;
+                        let list;
+                        switch ( position ) {
+                            case C.FROM_START:
+                                ix = s.pop();
+                                list = s.pop();
+                                s.push( list[ix] );
+                                break;
+                            case C.FROM_END:
+                                ix = s.pop();
+                                list = s.pop();
+                                s.push( list.slice( -( ix + 1 ) )[0] );
+                                break;
+                            case C.FIRST:
+                                list = s.pop();
+                                s.push( list[0] );
+                                break;
+                            case C.LAST:
+                                list = s.pop();
+                                s.push( list.slice( -1 )[0] );
+                                break;
+                            default:
+                                throw "Invalid Position for List Manipulation";
+                        }
+
+                    }
+                        break;
+
+                    case C.GET_REMOVE: {
+                        const position = expr[C.POSITION];
+                        let ix;
+                        let list;
+                        switch ( position ) {
+                            case C.FROM_START:
+                                ix = s.pop();
+                                list = s.pop();
+                                s.push( list.splice( ix, 1 )[0] );
+                                break;
+                            case C.FROM_END:
+                                ix = s.pop();
+                                list = s.pop();
+                                ix = list.length - ix - 1;
+                                s.push( list.splice( ix, 1 )[0] );
+                                break;
+                            case C.FIRST:
+                                list = s.pop();
+                                s.push( list.shift() );
+                                break;
+                            case C.LAST:
+                                list = s.pop();
+                                s.push( list.pop() );
+                                break;
+                            default:
+                                throw "Invalid Position for List Manipulation";
+                        }
+
+                    }
+                        break;
+             
+                    default:
+                        throw "Invalid Op on List Function Name";
+                }
+                
                 break;
             }
             case C.BINARY: {
