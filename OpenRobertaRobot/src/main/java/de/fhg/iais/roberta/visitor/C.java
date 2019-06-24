@@ -1,6 +1,7 @@
 package de.fhg.iais.roberta.visitor;
 
 public class C {
+    public static final String ADD = "ADD";
     public static final String AMBIENTLIGHT = "ambientlight";
     public static final String ANALOG = "analog";
     public static final String AND = "AND";
@@ -35,6 +36,7 @@ public class C {
     public static final String COMPASS = "compass";
     public static final String CONTINUE = "continue";
     public static final String CREATE_DEBUG_ACTION = "CreateDebugAction";
+    public static final String CREATE_LIST = "createList";
     public static final String CREATE_LISTS_GET_INDEX = "createListsGetIndex";
     public static final String CREATE_LISTS_GET_INDEX_STMT = "createListsGetIndexStmt";
     public static final String CREATE_LISTS_GET_SUBLIST = "createGetSubList";
@@ -236,7 +238,7 @@ public class C {
     public static final String SPEED_R = "speedR";
     public static final String STATEMENTS = "statements";
     public static final String STATUS_LIGHT_ACTION = "statusLightAction";
-    public static final String STD_DEV = "stdDev";
+    public static final String STD_DEV = "std_dev";
     public static final String STMT_LIST = "stmtList";
     public static final String STOP = "stop";
     public static final String STOP_DRIVE = "stopDrive";

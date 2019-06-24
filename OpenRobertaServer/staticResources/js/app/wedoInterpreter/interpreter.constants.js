@@ -1,6 +1,7 @@
 define(["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.ADD = "ADD";
     exports.AMBIENTLIGHT = "ambientlight";
     exports.ANALOG = "analog";
     exports.AND = "AND";
@@ -35,6 +36,7 @@ define(["require", "exports"], function (require, exports) {
     exports.COMPASS = "compass";
     exports.CONTINUE = "continue";
     exports.CREATE_DEBUG_ACTION = "CreateDebugAction";
+    exports.CREATE_LIST = "createList";
     exports.CREATE_LISTS_GET_INDEX = "createListsGetIndex";
     exports.CREATE_LISTS_GET_INDEX_STMT = "createListsGetIndexStmt";
     exports.CREATE_LISTS_GET_SUBLIST = "createGetSubList";
@@ -233,7 +235,7 @@ define(["require", "exports"], function (require, exports) {
     exports.SPEED_R = "speedR";
     exports.STATEMENTS = "statements";
     exports.STATUS_LIGHT_ACTION = "statusLightAction";
-    exports.STD_DEV = "stdDev";
+    exports.STD_DEV = "std_dev";
     exports.STMT_LIST = "stmtList";
     exports.STOP = "stop";
     exports.STOP_DRIVE = "stopDrive";

@@ -144,7 +144,7 @@ define(["require", "exports", "interpreter.aRobotBehaviour", "interpreter.consta
         };
         RobotMbedBehaviour.prototype.displayGetPixelBrightnessAction = function (s, x, y) {
             U.debug('***** get pixel x="' + x + ", y=" + y + '" *****');
-            var sensor = this.hardwareState.sensors['display'][C.PIXEL];
+            var sensor = this.hardwareState.sensors[C.DISPLAY][C.PIXEL];
             s.push(sensor[y][x]);
         };
         RobotMbedBehaviour.prototype.clearDisplay = function () {

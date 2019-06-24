@@ -525,7 +525,12 @@ public abstract class AbstractStackMachineVisitor<V> implements ILanguageVisitor
 
     @Override
     public V visitListCreate(ListCreate<V> listCreate) {
-        throw new DbcException("Operation not supported");
+
+        listCreate.getValue().visit(this);
+        int n = listCreate.getValue().get().size();
+
+        JSONObject o = mk(C.EXPR).put(C.EXPR, C.CREATE_LIST).put(C.NUMBER, n);
+        return app(o);
     }
 
     @Override
@@ -564,7 +569,9 @@ public abstract class AbstractStackMachineVisitor<V> implements ILanguageVisitor
 
     @Override
     public V visitMathOnListFunct(MathOnListFunct<V> mathOnListFunct) {
-        throw new DbcException("Operation not supported");
+        mathOnListFunct.getParam().forEach(x -> x.visit(this));
+        JSONObject o = mk(C.EXPR).put(C.EXPR, C.MATH_ON_LIST).put(C.OP, mathOnListFunct.getFunctName().toString().toLowerCase());
+        return app(o);
     }
 
     @Override

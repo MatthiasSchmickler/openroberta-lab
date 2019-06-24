@@ -1,4 +1,5 @@
 
+export const ADD: string = "ADD";
 export const AMBIENTLIGHT: string = "ambientlight";
 export const ANALOG: string = "analog";
 export const AND: string = "AND";
@@ -33,6 +34,7 @@ export const COLOUR: string = "colorValue";
 export const COMPASS: string = "compass";
 export const CONTINUE: string = "continue";
 export const CREATE_DEBUG_ACTION: string = "CreateDebugAction";
+export const CREATE_LIST: string = "createList";
 export const CREATE_LISTS_GET_INDEX: string = "createListsGetIndex";
 export const CREATE_LISTS_GET_INDEX_STMT: string = "createListsGetIndexStmt";
 export const CREATE_LISTS_GET_SUBLIST: string = "createGetSubList";
@@ -234,7 +236,7 @@ export const SPEED_L: string = "speedL";
 export const SPEED_R: string = "speedR";
 export const STATEMENTS: string = "statements";
 export const STATUS_LIGHT_ACTION: string = "statusLightAction";
-export const STD_DEV: string = "stdDev";
+export const STD_DEV: string = "std_dev";
 export const STMT_LIST: string = "stmtList";
 export const STOP: string = "stop";
 export const STOP_DRIVE: string = "stopDrive";

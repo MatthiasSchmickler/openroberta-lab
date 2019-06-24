@@ -295,6 +295,16 @@ define(["require", "exports", "interpreter.state", "interpreter.constants", "int
                 case C.NUM_CONST:
                     s.push(+expr[C.VALUE]);
                     break;
+                case C.CREATE_LIST: {
+                    var n = expr[C.NUMBER];
+                    var arr = new Array(n);
+                    for (var i = 0; i < n; i++) {
+                        var e = s.pop();
+                        arr[n - i - 1] = e;
+                    }
+                    s.push(arr);
+                    break;
+                }
                 case C.BOOL_CONST:
                     s.push(expr[C.VALUE]);
                     break;
@@ -464,6 +474,36 @@ define(["require", "exports", "interpreter.state", "interpreter.constants", "int
                     }
                     break;
                 }
+                case C.MATH_ON_LIST: {
+                    var subOp = expr[C.OP];
+                    var value = s.pop();
+                    switch (subOp) {
+                        case C.SUM:
+                            s.push(this.sum(value));
+                            break;
+                        case C.MIN:
+                            s.push(this.min(value));
+                            break;
+                        case C.MAX:
+                            s.push(this.max(value));
+                            break;
+                        case C.AVERAGE:
+                            s.push(this.mean(value));
+                            break;
+                        case C.MEDIAN:
+                            s.push(this.median(value));
+                            break;
+                        case C.STD_DEV:
+                            s.push(this.std(value));
+                            break;
+                        case C.RANDOM:
+                            s.push(value[this.getRandomInt(value.length)]);
+                            break;
+                        default:
+                            throw "Invalid Math on List Function Name";
+                    }
+                    break;
+                }
                 case C.BINARY: {
                     var subOp = expr[C.OP];
                     var right = s.pop();
@@ -610,15 +650,49 @@ define(["require", "exports", "interpreter.state", "interpreter.constants", "int
             if (this.terminated) {
                 callback();
             }
-            else if (durationInMilliSec > 100) {
-                // U.p( 'waiting for 100 msec from ' + durationInMilliSec + ' msec' );
-                durationInMilliSec -= 100;
-                setTimeout(function () { _this.timeout(callback, durationInMilliSec); }, 100);
-            }
             else {
-                // U.p( 'waiting for ' + durationInMilliSec + ' msec' );
-                setTimeout(function () { callback(); }, durationInMilliSec);
+                if (durationInMilliSec > 100) {
+                    // U.p( 'waiting for 100 msec from ' + durationInMilliSec + ' msec' );
+                    durationInMilliSec -= 100;
+                    setTimeout(function () { _this.timeout(callback, durationInMilliSec); }, 100);
+                }
+                else {
+                    // U.p( 'waiting for ' + durationInMilliSec + ' msec' );
+                    setTimeout(function () { callback(); }, durationInMilliSec);
+                }
             }
+        };
+        Interpreter.prototype.min = function (values) {
+            return Math.min.apply(null, values);
+        };
+        Interpreter.prototype.max = function (values) {
+            return Math.max.apply(null, values);
+        };
+        Interpreter.prototype.sum = function (values) {
+            return values.reduce(function (a, b) { return a + b; }, 0);
+        };
+        Interpreter.prototype.mean = function (value) {
+            var v = this.sum(value) / value.length;
+            return Number(v.toFixed(2));
+        };
+        Interpreter.prototype.median = function (values) {
+            values.sort(function (a, b) { return a - b; });
+            var median = (values[(values.length - 1) >> 1] + values[values.length >> 1]) / 2;
+            return Number(median.toFixed(2));
+        };
+        Interpreter.prototype.std = function (values) {
+            var avg = this.mean(values);
+            var diffs = values.map(function (value) { return value - avg; });
+            var squareDiffs = diffs.map(function (diff) { return diff * diff; });
+            var avgSquareDiff = this.mean(squareDiffs);
+            return Number(Math.sqrt(avgSquareDiff).toFixed(2));
+        };
+        Interpreter.prototype.getRandomInt = function (max) {
+            return Math.floor(Math.random() * Math.floor(max));
+        };
+        Interpreter.prototype.round2precision = function (x, precision) {
+            var y = +x + (precision === undefined ? 0.5 : precision / 2);
+            return y - (y % (precision === undefined ? 1 : +precision));
         };
         return Interpreter;
     }());

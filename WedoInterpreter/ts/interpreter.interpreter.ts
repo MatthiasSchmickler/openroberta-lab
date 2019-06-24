@@ -236,7 +236,7 @@ export class Interpreter {
                 case C.DISPLAY_GET_PIXEL_BRIGHTNESS_ACTION: {
                     const y = s.pop();
                     const x = s.pop();
-                    n.displayGetPixelBrightnessAction(s, x, y );
+                    n.displayGetPixelBrightnessAction( s, x, y );
                     break;
                 }
                 case C.STATUS_LIGHT_ACTION:
@@ -308,6 +308,17 @@ export class Interpreter {
             case C.NUM_CONST:
                 s.push( +expr[C.VALUE] );
                 break;
+            case C.CREATE_LIST: {
+                const n = expr[C.NUMBER];
+                var arr = new Array( n );
+                for ( let i = 0; i < n; i++ ) {
+                    const e = s.pop();
+                    arr[n - i - 1] = e;
+                }
+                s.push( arr );
+                break;
+            }
+
             case C.BOOL_CONST:
                 s.push( expr[C.VALUE] );
                 break;
@@ -420,6 +431,23 @@ export class Interpreter {
                 }
                 break;
             }
+            case C.MATH_ON_LIST: {
+                const subOp = expr[C.OP];
+                const value = s.pop();
+                switch ( subOp ) {
+                    case C.SUM: s.push( this.sum( value ) ); break;
+                    case C.MIN: s.push( this.min( value ) ); break;
+                    case C.MAX: s.push( this.max( value ) ); break;
+                    case C.AVERAGE: s.push( this.mean( value ) ); break;
+                    case C.MEDIAN: s.push( this.median( value ) ); break;
+                    case C.STD_DEV: s.push( this.std( value ) ); break;
+                    case C.RANDOM: s.push( value[this.getRandomInt(value.length)]  ); break;
+
+                    default:
+                        throw "Invalid Math on List Function Name";
+                }
+                break;
+            }
             case C.BINARY: {
                 const subOp = expr[C.OP];
                 const right = s.pop();
@@ -525,7 +553,7 @@ export class Interpreter {
     private timeout( callback: () => void, durationInMilliSec: number ) {
         if ( this.terminated ) {
             callback();
-        } else
+        } else {
             if ( durationInMilliSec > 100 ) {
                 // U.p( 'waiting for 100 msec from ' + durationInMilliSec + ' msec' );
                 durationInMilliSec -= 100;
@@ -534,5 +562,47 @@ export class Interpreter {
                 // U.p( 'waiting for ' + durationInMilliSec + ' msec' );
                 setTimeout(() => { callback() }, durationInMilliSec );
             }
+        }
+    }
+
+    private min( values: Array<number> ): number {
+        return Math.min.apply( null, values );
+    }
+
+    private max( values: Array<number> ): number {
+        return Math.max.apply( null, values );
+    }
+
+    private sum( values: Array<number> ): number {
+        return values.reduce(( a, b ) => a + b, 0 );
+    }
+
+    private mean( value: Array<number> ): number {
+        const v = this.sum( value ) / value.length;
+        return Number( v.toFixed( 2 ) );
+    }
+
+    private median( values: Array<number> ): number {
+        values.sort(( a, b ) => a - b );
+        const median = ( values[( values.length - 1 ) >> 1] + values[values.length >> 1] ) / 2;
+        return Number( median.toFixed( 2 ) )
+    }
+
+    private std( values: Array<number> ): number {
+        const avg = this.mean( values );
+        const diffs = values.map(( value ) => value - avg );
+        const squareDiffs = diffs.map(( diff ) => diff * diff );
+        const avgSquareDiff = this.mean( squareDiffs );
+        return Number( Math.sqrt( avgSquareDiff ).toFixed( 2 ) );
+
+    }
+
+    private getRandomInt( max: number ): number {
+        return Math.floor( Math.random() * Math.floor( max ) );
+    }
+
+    private round2precision( x: number, precision: number ): number {
+        var y = +x + ( precision === undefined ? 0.5 : precision / 2 );
+        return y - ( y % ( precision === undefined ? 1 : +precision ) );
     }
 }
