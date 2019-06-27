@@ -74,8 +74,11 @@ public class RobotDownloadProgram {
                     fileName = programName + ".rxe";
                     filePath = this.pathToCrosscompilerBaseDir + token + "/" + programName + "/target";
                     break;
-                case "ardu":
                 case "bob3":
+                    fileName = programName + ".cpp.hex";
+                    filePath = this.pathToCrosscompilerBaseDir + token + "/" + programName + "/source";
+                    break;
+                case "ardu":
                 case "uno":
                 case "mega":
                 case "nano":

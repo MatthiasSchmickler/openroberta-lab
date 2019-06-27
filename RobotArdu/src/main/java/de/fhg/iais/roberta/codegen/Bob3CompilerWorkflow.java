@@ -7,7 +7,6 @@ import java.nio.file.Paths;
 import java.util.Base64;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.SystemUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,7 +45,7 @@ public class Bob3CompilerWorkflow extends AbstractCompilerWorkflow {
 
     @Override
     public void compileSourceCode(String token, String programName, ILanguage language, Object flagProvider) {
-        this.storeGeneratedProgram(token, programName, ".ino");
+        this.storeGeneratedProgram(token, programName, ".cpp");
         if ( this.workflowResult == Key.COMPILERWORKFLOW_SUCCESS ) {
             this.workflowResult = this.runBuild(token, programName, "generated.main");
             if ( this.workflowResult == Key.COMPILERWORKFLOW_SUCCESS ) {
@@ -84,8 +83,9 @@ public class Bob3CompilerWorkflow extends AbstractCompilerWorkflow {
 
         final StringBuilder sb = new StringBuilder();
 
-        String scriptName = "";
+        String scriptName = compilerResourcesDir + "compile.sh";
         String os = "";
+        /*
         if ( SystemUtils.IS_OS_LINUX ) {
             if ( System.getProperty("os.arch").contains("arm") ) {
                 scriptName = compilerResourcesDir + "arduino-builder/linux-arm/arduino-builder";
@@ -100,7 +100,7 @@ public class Bob3CompilerWorkflow extends AbstractCompilerWorkflow {
         } else if ( SystemUtils.IS_OS_MAC ) {
             scriptName = compilerResourcesDir + "arduino-builder/osx/arduino-builder";
             os = "arduino-builder/osx";
-        }
+        }*/
 
         Path path = Paths.get(tempDir + token + "/" + mainFile);
         Path base = Paths.get("");
@@ -110,15 +110,10 @@ public class Bob3CompilerWorkflow extends AbstractCompilerWorkflow {
                 new ProcessBuilder(
                     new String[] {
                         scriptName,
-                        "-hardware=" + compilerResourcesDir + "hardware/builtin",
-                        "-hardware=" + compilerResourcesDir + "hardware/additional",
-                        "-tools=" + compilerResourcesDir + "/" + os + "/tools-builder",
-                        "-libraries=" + compilerResourcesDir + "/libraries",
-                        "-fqbn=nicai:avr:bob3",
-                        "-prefs=compiler.path=" + compilerBinDir,
-                        "-build-path=" + base.resolve(path).toAbsolutePath().normalize().toString() + "/target/",
-                        //                        "-verbose",
-                        base.resolve(path).toAbsolutePath().normalize().toString() + "/source/" + mainFile + ".ino"
+                        compilerResourcesDir + "/libraries/Bob3/",
+                        compilerResourcesDir + "/libraries/Bob3/",
+                        base.resolve(path).toAbsolutePath().normalize().toString() + "/source",
+                        mainFile + ".cpp"
                     });
 
             procBuilder.redirectInput(Redirect.INHERIT);
@@ -132,7 +127,7 @@ public class Bob3CompilerWorkflow extends AbstractCompilerWorkflow {
                 return Key.COMPILERWORKFLOW_ERROR_PROGRAM_COMPILE_FAILED;
             }
 
-            this.compiledHex = FileUtils.readFileToString(new File(path + "/target/" + mainFile + ".ino.hex"), "UTF-8");
+            this.compiledHex = FileUtils.readFileToString(new File(path + "/source/" + mainFile + ".cpp.hex"), "UTF-8");
             Base64.Encoder urec = Base64.getEncoder();
             this.compiledHex = urec.encodeToString(this.compiledHex.getBytes());
             return Key.COMPILERWORKFLOW_SUCCESS;

@@ -29,7 +29,7 @@ public class Bob3Factory extends AbstractRobotFactory {
 
     @Override
     public String getFileExtension() {
-        return "ino";
+        return "cpp";
     }
 
     @Override
