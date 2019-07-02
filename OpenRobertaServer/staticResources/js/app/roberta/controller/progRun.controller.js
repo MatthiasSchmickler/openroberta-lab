@@ -213,6 +213,11 @@ define([ 'exports', 'util', 'log', 'message', 'program.controller', 'program.mod
             $('#trA').removeClass('hidden');
         } else {
             $('#trA').addClass('hidden');
+
+            if ( fileName.endsWith(".wav") ) {
+                content = UTIL.base64decode(content);
+            }
+
             UTIL.download(fileName, content);
             GUISTATE_C.setConnectionState("error");
         }

@@ -118,42 +118,29 @@ public class EdisonCompilerWorkflow extends AbstractCompilerWorkflow {
         //get all directories
         String compilerDir = this.pluginProperties.getCompilerResourceDir();
         String sourceFilePath = this.pluginProperties.getTempDir() + "/" + token + "/" + pyFile + "/source/";
+        String targetFilePath = this.pluginProperties.getTempDir() + "/" + token + "/" + pyFile + "/target/";
         String wavFileName = null;
 
         //build and start the Python process
         ProcessBuilder
             processBuilder =
-            new ProcessBuilder("/usr/bin/python2", compilerDir + "EdPy.py", compilerDir + "en_lang.json", sourceFilePath + pyFile + ".py");
+            new ProcessBuilder("/usr/bin/python2", compilerDir + "EdPy.py", compilerDir + "en_lang.json", sourceFilePath + pyFile + ".py",
+                "-t", targetFilePath + pyFile + ".wav");
 
         try {
+            processBuilder.redirectOutput(ProcessBuilder.Redirect.INHERIT);
             Process p = processBuilder.start();
             int exitCode = p.waitFor();
 
-
             //get the correct WAV file after the Python process finished successfully
-            System.err.println("/usr/bin/python2: Exit code " + exitCode);
+            System.err.println("python2: Exit code " + exitCode);
 
             if ( exitCode != 0 ) {
                 return Key.COMPILERWORKFLOW_ERROR_PROGRAM_COMPILE_FAILED;
             }
 
-            File tempDir = new File(sourceFilePath);
-            File[] list = tempDir.listFiles();
-
-            if ( list.length <= 0 ) {
-                LOG.error("Cannot find WAV target file");
-                return Key.COMPILERWORKFLOW_ERROR_PROGRAM_COMPILE_FAILED;
-            }
-
-            for ( File f : list ) { //WAV target files have a random name inside the temp directory
-                if ( f.getName().startsWith("tok") && f.getName().endsWith(".wav") ) {
-                    wavFileName = f.getName();
-                    break;
-                }
-            }
-
             //cast the file to a String using the Base64 encoder
-            byte[] wavBytes = FileUtils.readFileToByteArray(new File(sourceFilePath + "/" + wavFileName));
+            byte[] wavBytes = FileUtils.readFileToByteArray(new File(targetFilePath + pyFile + ".wav"));
             this.compiledWav = Base64.getEncoder().encodeToString(wavBytes);
 
         } catch ( IOException e ) { //if process cannot be started
