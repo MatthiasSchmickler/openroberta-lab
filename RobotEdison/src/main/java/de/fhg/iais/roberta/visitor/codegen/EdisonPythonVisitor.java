@@ -94,10 +94,11 @@ public class EdisonPythonVisitor extends AbstractPythonVisitor implements IEdiso
 
         this.sb.append("#-------------Setup-------------------" + newLine + newLine);
         this.sb.append("import Ed" + newLine);
-        this.sb.append("Ed.EdisonVersion = Ed.V1" + newLine + newLine);
-        this.sb.append("Ed.DistanceUnits = Ed.TIME" + newLine); //TODO-MAX checken wie es mit time und cm aussieht (anm.: es sieht nicht gut aus)
+        this.sb.append("Ed.EdisonVersion = Ed.V2" + newLine + newLine);
+        this.sb.append("Ed.DistanceUnits = Ed.CM" + newLine); //TODO-MAX checken wie es mit time und cm aussieht (anm.: es sieht nicht gut aus)
         this.sb.append("Ed.Tempo = Ed.TEMPO_MEDIUM" + newLine + newLine);
         this.sb.append("#--------Blockly code below-----------" + newLine + newLine);
+        this.sb.append("Ed.LineTrackerLed(Ed.ON)--");
     }
 
     /**
@@ -326,6 +327,7 @@ public class EdisonPythonVisitor extends AbstractPythonVisitor implements IEdiso
      * @param motorOnAction
      */
     @Override public Void visitMotorOnAction(MotorOnAction<Void> motorOnAction) {
+        this.sb.append(motorOnAction.getParam().toString());
         return null;
     }
 
@@ -492,10 +494,10 @@ public class EdisonPythonVisitor extends AbstractPythonVisitor implements IEdiso
      */
     @Override public Void visitLightAction(LightAction<Void> lightAction) {
         switch (lightAction.getPort().toLowerCase()) {
-            case "1":
+            case "RLED":
                 this.sb.append("Ed.RightLed(Ed.ON)");
                 break;
-            case "2":
+            case "LLED":
                 this.sb.append("Ed.LeftLed(Ed.ON)");
                 break;
             default:
@@ -513,10 +515,10 @@ public class EdisonPythonVisitor extends AbstractPythonVisitor implements IEdiso
      */
     @Override public Void visitLightStatusAction(LightStatusAction<Void> lightStatusAction) {
         switch (lightStatusAction.getPort()) {
-            case "1":
+            case "RLED":
                 this.sb.append("Ed.RightLed(Ed.OFF)");
                 break;
-            case "2":
+            case "LLED":
                 this.sb.append("Ed.LeftLed(Ed.OFF)");
                 break;
             default:
