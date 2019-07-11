@@ -3,8 +3,9 @@
   <category name="TOOLBOX_ACTION" svg="true">
 
     <category name="TOOLBOX_MOVE" svg="true">
+      <block type="robBrick_Edison-Brick"></block>
       <block type="robActions_motor_on">
-        <field name="MOTORPORT">B</field>
+        <field name="MOTORPORT">LMOTOR</field>
         <value name="POWER">
           <block type="math_integer">
             <field name="NUM">23</field>
@@ -12,7 +13,7 @@
         </value>
       </block>
       <block type="robActions_motor_on_for">
-        <field name="MOTORPORT">B</field>
+        <field name="MOTORPORT">LMOTOR</field>
         <value name="POWER">
           <block type="math_integer">
             <field name="NUM">30</field>
@@ -25,7 +26,7 @@
         </value>
       </block>
       <block type="robActions_motor_stop">
-        <field name="MOTORPORT">B</field>
+        <field name="MOTORPORT">LMOTOR</field>
       </block>
     </category>
 
@@ -100,7 +101,7 @@
       </block>
     </category>
 
-   <category name="TOOLBOX_SOUND" svg="true">
+    <category name="TOOLBOX_SOUND" svg="true">
       <block type="robActions_play_tone">
         <value name="FREQUENCE">
           <block type="math_integer">
