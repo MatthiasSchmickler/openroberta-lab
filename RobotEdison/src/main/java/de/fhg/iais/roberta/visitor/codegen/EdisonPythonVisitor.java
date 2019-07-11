@@ -97,8 +97,8 @@ public class EdisonPythonVisitor extends AbstractPythonVisitor implements IEdiso
         this.sb.append("Ed.EdisonVersion = Ed.V2" + newLine + newLine);
         this.sb.append("Ed.DistanceUnits = Ed.CM" + newLine); //TODO-MAX checken wie es mit time und cm aussieht (anm.: es sieht nicht gut aus)
         this.sb.append("Ed.Tempo = Ed.TEMPO_MEDIUM" + newLine + newLine);
-        this.sb.append("#--------Blockly code below-----------" + newLine + newLine);
-        this.sb.append("Ed.LineTrackerLed(Ed.ON)--");
+        this.sb.append("#----------Blockly code---------------" + newLine + newLine);
+        this.sb.append("Ed.LineTrackerLed(Ed.ON)" + newLine);
     }
 
     /**
@@ -107,7 +107,13 @@ public class EdisonPythonVisitor extends AbstractPythonVisitor implements IEdiso
      * @param withWrapping
      */
     @Override protected void generateProgramSuffix(boolean withWrapping) {
-        return;
+        if (!withWrapping) {
+            return;
+        }
+
+        this.sb.append(newLine + newLine + newLine + newLine);
+        this.sb.append("#-----NEPO helper methods-------------" + newLine);
+        this.sb.append("def round(num): return ((num+5)/10)");
     }
 
     /**
@@ -116,7 +122,7 @@ public class EdisonPythonVisitor extends AbstractPythonVisitor implements IEdiso
      *
      * @param brickCfg       the brick configuration
      * @param programPhrases the program to generate the code from
-     * @param withWrapping   is wrapping wanted?
+     * @param withWrapping   wrap the code with prefix/suffix (yes/no)
      * @param language       the locale
      * @return the source code as a String
      */
@@ -161,14 +167,6 @@ public class EdisonPythonVisitor extends AbstractPythonVisitor implements IEdiso
 
         return null;
     }
-
-    /**
-     * Function to find the first (or last) occurrence of an element in a list
-     * //NOP
-     * visit a {@link IndexOfFunct}.
-     *
-     * @param indexOfFunct to be visited
-     */
 
     /**
      * Function to create a list
@@ -301,59 +299,6 @@ public class EdisonPythonVisitor extends AbstractPythonVisitor implements IEdiso
     }
 
     /**
-     * Function to drive a curve forard/backward
-     * visit a {@link CurveAction}.
-     *
-     * @param curveAction
-     */
-    @Override public Void visitCurveAction(CurveAction<Void> curveAction) {
-        return null;
-    }
-
-    /**
-     * Function to turn the robot
-     * visit a {@link TurnAction}.
-     *
-     * @param turnAction to be visited
-     */
-    @Override public Void visitTurnAction(TurnAction<Void> turnAction) {
-        return null;
-    }
-
-    /**
-     * Function to turn the motors to a set power%
-     * visit a {@link MotorOnAction}.
-     *
-     * @param motorOnAction
-     */
-    @Override public Void visitMotorOnAction(MotorOnAction<Void> motorOnAction) {
-        this.sb.append(motorOnAction.getParam().toString());
-        return null;
-    }
-
-    /**
-     * Function to stop the motor
-     * visit a {@link MotorStopAction}.
-     *
-     * @param motorStopAction
-     */
-    @Override public Void visitMotorStopAction(MotorStopAction<Void> motorStopAction) {
-        this.sb.append(motorStopAction.getUserDefinedPort().toLowerCase());
-        return null;
-    }
-
-    /**
-     * Function to stop the motors
-     * visit a {@link MotorDriveStopAction}.
-     *
-     * @param stopAction
-     */
-    @Override public Void visitMotorDriveStopAction(MotorDriveStopAction<Void> stopAction) {
-        this.sb.append("chi zhang");
-        return null;
-    }
-
-    /**
      * Function to get the index of the first occurrence of an element in a list
      *
      * @param indexOfFunct to be visited
@@ -370,6 +315,124 @@ public class EdisonPythonVisitor extends AbstractPythonVisitor implements IEdiso
 
 
 
+
+    /**
+     * Function to drive a curve forard/backward
+     * visit a {@link CurveAction}.
+     *
+     * @param curveAction
+     */
+    @Override public Void visitCurveAction(CurveAction<Void> curveAction) {
+
+        String direction;
+
+        switch (curveAction.getDirection().toString()) {
+            default:
+            case "FOREWARD":
+                direction = "Ed.FORWARD";
+                break;
+            case "BACKWARD":
+                direction = "Ed.BACKWARD";
+                break;
+        }
+        this.sb.append("Ed.DriveLeftMotor(" + direction + ", ");
+        curveAction.getParamLeft().getSpeed().visit(this);
+        this.sb.append(", round(");
+        curveAction.getParamLeft().getDuration().getValue().visit(this);
+        this.sb.append("))");
+
+        this.sb.append(newLine);
+
+        this.sb.append("Ed.DriveRightMotor(" + direction + ", ");
+        curveAction.getParamRight().getSpeed().visit(this);
+        this.sb.append(", round(");
+        curveAction.getParamRight().getDuration().getValue().visit(this);
+        this.sb.append("))");
+
+        return null;
+    }
+
+    /**
+     * Function to turn the robot
+     * visit a {@link TurnAction}.
+     *
+     * @param turnAction to be visited
+     */
+    @Override public Void visitTurnAction(TurnAction<Void> turnAction) {
+        switch (turnAction.getDirection().toString()) {
+            case "RIGHT":
+                this.sb.append("Ed.Drive(Ed.FORWARD_RIGHT, ");
+                break;
+            case "LEFT":
+                this.sb.append("Ed.Drive(Ed.FORWARD_LEFT, ");
+                break;
+            default:
+                break;
+        }
+
+        this.sb.append("round(");
+        turnAction.getParam().getSpeed().visit(this);
+        this.sb.append("), ");
+        turnAction.getParam().getDuration().getValue().visit(this);
+        this.sb.append(")");
+
+        return null;
+    }
+
+    /**
+     * Function to turn the motors to a set power%
+     * visit a {@link MotorOnAction}.
+     *
+     * @param motorOnAction
+     */
+    @Override public Void visitMotorOnAction(MotorOnAction<Void> motorOnAction) {
+        switch (motorOnAction.getUserDefinedPort().toLowerCase()) {
+            case "lmotor":
+                this.sb.append("Ed.DriveLeftMotor(Ed.FORWARD, round(");
+                motorOnAction.getParam().getSpeed().visit(this);
+                this.sb.append("), Ed.DISTANCE_UNLIMITED)");
+                break;
+            case "rmotor":
+                this.sb.append("Ed.DriveRightMotor(Ed.FORWARD, round(");
+                motorOnAction.getParam().getSpeed().visit(this);
+                this.sb.append("), Ed.DISTANCE_UNLIMITED)");
+                break;
+            default:
+                break;
+        }
+        return null;
+    }
+
+    /**
+     * Function to stop the motor
+     * visit a {@link MotorStopAction}.
+     *
+     * @param motorStopAction
+     */
+    @Override public Void visitMotorStopAction(MotorStopAction<Void> motorStopAction) {
+        switch (motorStopAction.getUserDefinedPort().toLowerCase()) {
+            case "lmotor":
+                this.sb.append("Ed.DriveLeftMotor(Ed.STOP, Ed.SPEED_1, 0)");
+                break;
+            case "rmotor":
+                this.sb.append("Ed.DriveRightMotor(Ed.STOP, Ed.SPEED_1, 0)");
+                break;
+            default:
+                break;
+        }
+        return null;
+    }
+
+    /**
+     * Function to stop the motors
+     * visit a {@link MotorDriveStopAction}.
+     *
+     * @param stopAction
+     */
+    @Override public Void visitMotorDriveStopAction(MotorDriveStopAction<Void> stopAction) {
+        this.sb.append("Ed.Drive(Ed.STOP, Ed.SPEED_1, 0)");
+        return null;
+    }
 
     /**
      * Function to find out the length of list or if it is empty
