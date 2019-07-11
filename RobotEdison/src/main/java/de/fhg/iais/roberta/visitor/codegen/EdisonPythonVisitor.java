@@ -45,24 +45,6 @@ public class EdisonPythonVisitor extends AbstractPythonVisitor implements IEdiso
     protected ILanguage lang;
     private String newLine = System.getProperty("line.separator");
 
-    /**
-     * visit a {@link KeysSensor}.
-     *
-     * @param keysSensor to be visited
-     */
-    @Override public Void visitKeysSensor(KeysSensor<Void> keysSensor) {
-        switch (keysSensor.getPort().toLowerCase()) {
-            case "rec":
-                this.sb.append("Ed.ReadKeypad(Ed.KEYPAD_ROUND)");
-            case "play":
-                this.sb.append("Ed.ReadKeypad(Ed.KEYPAD_TRIANGLE)");
-            default:
-                System.out.println("Yo");
-                System.out.println(keysSensor.getPort().toLowerCase());
-        }
-
-        return null;
-    }
 
     /**
      * initialize the Python code generator visitor.
@@ -86,7 +68,7 @@ public class EdisonPythonVisitor extends AbstractPythonVisitor implements IEdiso
     /**
      * Generates the program prefix, i.e. all preparations that need to be executed before the __main__ method is called
      *
-     * @param withWrapping
+     * @param withWrapping if the source code should be wrapped by prefix/suffix
      */
     @Override protected void generateProgramPrefix(boolean withWrapping) {
         if ( !withWrapping )
@@ -103,8 +85,9 @@ public class EdisonPythonVisitor extends AbstractPythonVisitor implements IEdiso
 
     /**
      * Generates the program suffix, i.e. everything that will be appended to the very end of the source .py file
+     * In the suffix are NEPO helper methods for things like sum, round, min, max, etc
      *
-     * @param withWrapping
+     * @param withWrapping if the source code should be wrapped by prefix/suffix
      */
     @Override protected void generateProgramSuffix(boolean withWrapping) {
         if (!withWrapping) {
@@ -113,7 +96,30 @@ public class EdisonPythonVisitor extends AbstractPythonVisitor implements IEdiso
 
         this.sb.append(newLine + newLine + newLine + newLine);
         this.sb.append("#-----NEPO helper methods-------------" + newLine);
-        this.sb.append("def round(num): return ((num+5)/10)");
+
+        this.sb.append(
+            "def round(num): return ((num+5)/10)" + newLine);
+        this.sb.append(newLine);
+
+        this.sb.append(
+            "def max(list):" + newLine
+            + "     max_of_list = list[0]" + newLine
+            + "     for i in range(list):" + newLine
+            + "     if list[i] > max_of_list: max_of_list = list[i]" + newLine
+            + "     return max_of_list" + newLine);
+        this.sb.append(newLine);
+
+        this.sb.append(
+            "def min(list):" + newLine
+            + "     min_of_list = list[0]" + newLine
+            + "     for i in range(list):" + newLine
+            + "          if list[i] < min_of_list: min_of_list = list[i]" + newLine
+            + "     return min_of_list" + newLine);
+        this.sb.append(newLine);
+
+            this.sb.append(
+                "def avg(list):" + newLine
+            + "     return sum(list) / range(list)");
     }
 
     /**
@@ -142,6 +148,7 @@ public class EdisonPythonVisitor extends AbstractPythonVisitor implements IEdiso
      * @param connectConst to be visited
      */
     @Override public Void visitConnectConst(ConnectConst<Void> connectConst) {
+        //not needed I guess.. (idk what this does)
         return null;
     }
 
@@ -153,6 +160,7 @@ public class EdisonPythonVisitor extends AbstractPythonVisitor implements IEdiso
      * @param textPrintFunct to be visited
      */
     @Override public Void visitTextPrintFunct(TextPrintFunct<Void> textPrintFunct) {
+        //not needed in Edison
         return null;
     }
 
@@ -200,7 +208,8 @@ public class EdisonPythonVisitor extends AbstractPythonVisitor implements IEdiso
         return null;
     }
 
-    /** Function to check if a number is odd/even/positive/negative/...
+    /**
+     * Function to check if a number is odd/even/positive/negative/...
      * visit a {@link MathNumPropFunct}.
      *
      * @param mathNumPropFunct to be visited
@@ -217,7 +226,7 @@ public class EdisonPythonVisitor extends AbstractPythonVisitor implements IEdiso
                 mathNumPropFunct.getParam().get(0).visit(this);
                 this.sb.append(" % 2) != 0)");
                 break;
-            case PRIME: //TODO-MAX eigene implementierung?
+            case PRIME: //TODO-MAX eigene implementierung? Ja, aber nur wenn isPrime genutzt wird..
                 this.sb.append("BlocklyMethods.isPrime(");
                 mathNumPropFunct.getParam().get(0).visit(this);
                 this.sb.append(")");
@@ -254,16 +263,37 @@ public class EdisonPythonVisitor extends AbstractPythonVisitor implements IEdiso
      * @param mathOnListFunct to be visited
      */
     @Override public Void visitMathOnListFunct(MathOnListFunct<Void> mathOnListFunct) {
+        //TODO-MAX only use helper methods when really needed
+        switch (mathOnListFunct.getFunctName().getOpSymbol()) {
+            case "SUM":
+                this.sb.append("sum(");
+                break;
+            case "MIN":
+                this.sb.append("min(");
+                break;
+            case "MAX":
+                this.sb.append("max(");
+                break;
+            case "AVERAGE":
+                this.sb.append("avg(");
+                break;
+            default:
+                break;
+        }
+
+        mathOnListFunct.getParam().get(0).visit(this);
+        this.sb.append(")");
         return null;
     }
 
     /**
-     * Function to get a random fraction/float
+     * Function to get a random float between 0 and 1
      * visit a {@link MathRandomFloatFunct}.
      *
      * @param mathRandomFloatFunct
      */
     @Override public Void visitMathRandomFloatFunct(MathRandomFloatFunct<Void> mathRandomFloatFunct) {
+        //not supported by Edison robot
         return null;
     }
 
@@ -274,6 +304,7 @@ public class EdisonPythonVisitor extends AbstractPythonVisitor implements IEdiso
      * @param mathRandomIntFunct to be visited
      */
     @Override public Void visitMathRandomIntFunct(MathRandomIntFunct<Void> mathRandomIntFunct) {
+        //not supported by Edison robot
         return null;
     }
 
@@ -315,6 +346,26 @@ public class EdisonPythonVisitor extends AbstractPythonVisitor implements IEdiso
 
 
 
+
+    /**
+     * Function to execute code when a key is pressed
+     * visit a {@link KeysSensor}.
+     *
+     * @param keysSensor to be visited
+     */
+    @Override public Void visitKeysSensor(KeysSensor<Void> keysSensor) {
+        switch (keysSensor.getPort().toLowerCase()) {
+            case "rec":
+                this.sb.append("Ed.ReadKeypad(Ed.KEYPAD_ROUND)");
+            case "play":
+                this.sb.append("Ed.ReadKeypad(Ed.KEYPAD_TRIANGLE)");
+            default:
+                System.out.println("Yo");
+                System.out.println(keysSensor.getPort().toLowerCase());
+        }
+
+        return null;
+    }
 
     /**
      * Function to drive a curve forard/backward
