@@ -93,7 +93,6 @@ public class EdisonCompilerWorkflow extends AbstractCompilerWorkflow {
      */
     @Override public Configuration generateConfiguration(IRobotFactory factory, String blocklyXml) throws Exception {
         return new Configuration.Builder().build();
-        //TODO-MAX wenn V1 und V2 beide unterschiedlich sind: bei Calliope gucken was passiert
     }
 
     /**

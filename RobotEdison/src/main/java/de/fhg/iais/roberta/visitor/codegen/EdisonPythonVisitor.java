@@ -20,6 +20,7 @@ import de.fhg.iais.roberta.syntax.lang.blocksequence.MainTask;
 import de.fhg.iais.roberta.syntax.lang.expr.ConnectConst;
 import de.fhg.iais.roberta.syntax.lang.expr.ListCreate;
 import de.fhg.iais.roberta.syntax.lang.expr.MathConst;
+import de.fhg.iais.roberta.syntax.lang.expr.NumConst;
 import de.fhg.iais.roberta.syntax.lang.functions.*;
 import de.fhg.iais.roberta.syntax.lang.stmt.StmtList;
 import de.fhg.iais.roberta.syntax.lang.stmt.WaitStmt;
@@ -42,6 +43,7 @@ public class EdisonPythonVisitor extends AbstractPythonVisitor implements IEdiso
     protected final Configuration brickConfig;
     protected final Set<UsedSensor> usedSensors;
     protected final Set<UsedActor> usedActors;
+    protected final Set<EdisonUsedHardwareCollectorVisitor.Method> usedMethods;
     protected ILanguage lang;
     private String newLine = System.getProperty("line.separator");
 
@@ -61,6 +63,7 @@ public class EdisonPythonVisitor extends AbstractPythonVisitor implements IEdiso
         EdisonUsedHardwareCollectorVisitor checker = new EdisonUsedHardwareCollectorVisitor(programPhrases, brickConfig);
         this.usedSensors = checker.getUsedSensors();
         this.usedActors = checker.getUsedActors();
+        this.usedMethods = checker.getUsedMethods();
         this.usedGlobalVarInFunctions = checker.getMarkedVariablesAsGlobal();
         this.lang = language;
     }
@@ -84,6 +87,7 @@ public class EdisonPythonVisitor extends AbstractPythonVisitor implements IEdiso
     }
 
     /**
+     * //TODO-MAX nlIndent increment decrement
      * Generates the program suffix, i.e. everything that will be appended to the very end of the source .py file
      * In the suffix are NEPO helper methods for things like sum, round, min, max, etc
      *
@@ -94,32 +98,92 @@ public class EdisonPythonVisitor extends AbstractPythonVisitor implements IEdiso
             return;
         }
 
-        this.sb.append(newLine + newLine + newLine + newLine);
-        this.sb.append("#-----NEPO helper methods-------------" + newLine);
+        nlIndent(); nlIndent();
+        this.sb.append("#-----NEPO helper methods-------------"); nlIndent();
 
-        this.sb.append(
-            "def round(num): return ((num+5)/10)" + newLine);
-        this.sb.append(newLine);
+        this.sb.append("def round(num): return ((num+5)/10)"); nlIndent();
 
-        this.sb.append(
-            "def max(list):" + newLine
-            + "     max_of_list = list[0]" + newLine
-            + "     for i in range(list):" + newLine
-            + "     if list[i] > max_of_list: max_of_list = list[i]" + newLine
-            + "     return max_of_list" + newLine);
-        this.sb.append(newLine);
+        for ( EdisonUsedHardwareCollectorVisitor.Method m : this.usedMethods) {
+            switch (m) {
+                case AVG:
+                    this.sb.append("def avg(list): return sum(list) / range(list)");
+                    nlIndent();
+                    break;
+                case SUM:
+                    this.sb.append("def sum(list):");
+                    incrIndentation();
+                    nlIndent();
+                    this.sb.append("sum_of_list = 0");
+                    nlIndent();
+                    this.sb.append("for i in range(list): sum_of_list = (sum_of_list + list[i])");
+                    nlIndent();
+                    this.sb.append("return sum_of_list");
+                    decrIndentation();
+                    nlIndent();
+                    break;
+                case MIN:
+                    this.sb.append("def min(list):");
+                    incrIndentation();
+                    nlIndent();
+                    this.sb.append("min_of_list = list[0]");
+                    nlIndent();
+                    this.sb.append("for i in range(list): if list[i] < min_of_list: min_of_list = list[i]");
+                    nlIndent();
+                    this.sb.append("return min_of_list");
+                    decrIndentation();
+                    nlIndent();
+                    break;
+                case MAX:
+                    this.sb.append("def max(list):");
+                    incrIndentation();
+                    nlIndent();
+                    this.sb.append("max_of_list = list[0]");
+                    nlIndent();
+                    this.sb.append("for i in range(list): if list[i] > max_of_list: max_of_list = list[i]");
+                    nlIndent();
+                    this.sb.append("return max_of_list");
+                    decrIndentation();
+                    nlIndent();
+                    break;
+                case CREATE_REPEAT:
+                    this.sb.append("def create_repeat(item, times):");
+                    incrIndentation();
+                    nlIndent();
+                    this.sb.append("list = Ed.List(times)");
+                    nlIndent();
+                    this.sb.append("for i in range(list): list[i] = item");
+                    nlIndent();
+                    this.sb.append("return list");
+                    decrIndentation();
+                    nlIndent();
 
-        this.sb.append(
-            "def min(list):" + newLine
-            + "     min_of_list = list[0]" + newLine
-            + "     for i in range(list):" + newLine
-            + "          if list[i] < min_of_list: min_of_list = list[i]" + newLine
-            + "     return min_of_list" + newLine);
-        this.sb.append(newLine);
+                    break;
+                case PRIME:
+                    this.sb.append("def isPrime(number):");
+                    incrIndentation();
+                    nlIndent();
+                    this.sb.append("if number <= 1: return False");
+                    nlIndent();
+                    this.sb.append("for x in range(number - 2) :");
+                    incrIndentation();
+                    nlIndent();
+                    this.sb.append("y = (x + 2)");
+                    nlIndent();
+                    this.sb.append("if (number % y) == 0: return False");
+                    decrIndentation();
+                    nlIndent();
+                    this.sb.append("return True");
+                    decrIndentation();
+                    nlIndent();
+                    break;
+                default:
+                    break;
+            }
 
-            this.sb.append(
-                "def avg(list):" + newLine
-            + "     return sum(list) / range(list)");
+            this.sb.append(newLine);
+        }
+
+        return;
     }
 
     /**
@@ -144,7 +208,7 @@ public class EdisonPythonVisitor extends AbstractPythonVisitor implements IEdiso
 
     /**
      * visit a {@link ConnectConst}.
-     *
+     * //NOP
      * @param connectConst to be visited
      */
     @Override public Void visitConnectConst(ConnectConst<Void> connectConst) {
@@ -193,7 +257,11 @@ public class EdisonPythonVisitor extends AbstractPythonVisitor implements IEdiso
      * @param listRepeat to be visited
      */
     @Override public Void visitListRepeat(ListRepeat<Void> listRepeat) {
-        this.sb.append(listRepeat.getParam().get(0).toString());
+        this.sb.append("create_repeat(");
+        listRepeat.getParam().get(0).visit(this);
+        this.sb.append(", ");
+        listRepeat.getParam().get(1).visit(this);
+        this.sb.append(")");
 
         return null;
     }
@@ -226,7 +294,7 @@ public class EdisonPythonVisitor extends AbstractPythonVisitor implements IEdiso
                 mathNumPropFunct.getParam().get(0).visit(this);
                 this.sb.append(" % 2) != 0)");
                 break;
-            case PRIME: //TODO-MAX eigene implementierung? Ja, aber nur wenn isPrime genutzt wird..
+            case PRIME:
                 this.sb.append("BlocklyMethods.isPrime(");
                 mathNumPropFunct.getParam().get(0).visit(this);
                 this.sb.append(")");
@@ -339,6 +407,17 @@ public class EdisonPythonVisitor extends AbstractPythonVisitor implements IEdiso
         return null;
     }
 
+    @Override
+    public Void visitNumConst(NumConst<Void> numConst) {
+        // TODO Do we have always to cast to float
+        if ( isInteger(numConst.getValue()) ) {
+            super.visitNumConst(numConst);
+        } else {
+            throw new IllegalArgumentException("Not an integer");
+        }
+        return null;
+    }
+
 
 
 
@@ -360,8 +439,6 @@ public class EdisonPythonVisitor extends AbstractPythonVisitor implements IEdiso
             case "play":
                 this.sb.append("Ed.ReadKeypad(Ed.KEYPAD_TRIANGLE)");
             default:
-                System.out.println("Yo");
-                System.out.println(keysSensor.getPort().toLowerCase());
         }
 
         return null;
@@ -521,7 +598,7 @@ public class EdisonPythonVisitor extends AbstractPythonVisitor implements IEdiso
      * @return null
      */
     @Override public Void visitWaitStmt(WaitStmt<Void> waitStmt) {
-        this.sb.append("Ed.TimeWait(1, Ed.TIME_SECONDS)"); //TODO-MAX richtige länge
+        this.sb.append("Ed.TimeWait(1, Ed.TIME_SECONDS)");
         return null;
     }
 
