@@ -59,7 +59,7 @@ public class EdisonCompilerWorkflow extends AbstractCompilerWorkflow {
 
         } catch ( Exception e ) {
             LOG.error("Edison code generation failed", e);
-            this.workflowResult = Key.COMPILERWORKFLOW_ERROR_CONFIGURATION_TRANSFORM_FAILED;
+            this.workflowResult = Key.COMPILERWORKFLOW_ERROR_PROGRAM_TRANSFORM_FAILED;
         }
 
     }

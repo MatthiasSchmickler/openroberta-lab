@@ -27,23 +27,36 @@ public class EdisonUsedHardwareCollectorVisitor extends AbstractUsedHardwareColl
     public EdisonUsedHardwareCollectorVisitor(ArrayList<ArrayList<Phrase<Void>>> programPhrases, Configuration robotConfiguration) {
         super(robotConfiguration);
         check(programPhrases);
-        this.infraredBlocker = Sensor.NONE;
-        this.usedMethods = new HashSet<Method>();
     }
 
     /**
      * The Sensors that can use the IR LEDs
      */
     public enum Sensor {
-        OBSTACLE, IRSENDER, IRSEEKER, NONE
+        OBSTACLE, //The infrared obstacle detection
+        IRSENDER, //IR Code sender...
+        IRSEEKER, //...and receiver
+        NONE //No method (standard from start)
     }
     //TODO-MAX IR seeker, IR RC, Obstacle detection share IR LEDs
-    private Sensor infraredBlocker; //saves which Sensor uses the IR LEDs
+    private Sensor infraredBlocker = Sensor.NONE; //saves which Sensor uses the IR LEDs
 
+
+    /**
+     * Blockly Blocks that need an extra helper method in the source code
+     */
     public enum Method {
-        SUM, MIN, MAX, ROUND, AVG, CREATE_REPEAT, PRIME
+        AVG, //Average of a list
+        CREATE_REPEAT, //Create a list with an integer x repeated n times
+        MAX, //maximum of a given list
+        MIN, //minimum of a list
+        PRIME, //check if the given number is a prime number
+        ROUND, //round a number and divide it by 10 for Edisons Drive() method
+        SUM //Sum of a list
+
     }
-    private Set<Method> usedMethods;
+
+    private HashSet<Method> usedMethods; //All needed helper methods as a Set
 
 
     @Override public Void visitLightSensor(LightSensor<Void> lightSensor) {
@@ -73,29 +86,33 @@ public class EdisonUsedHardwareCollectorVisitor extends AbstractUsedHardwareColl
 
     //TODO-MAX JavaDoc zuende
     /**
+     * Visit the "Create List with repeated item" function so that their helper methods cna be appended to the end of the source code
      *
      * @param listRepeat
      * @return
      */
     @Override public Void visitListRepeat(ListRepeat<Void> listRepeat) {
-        this.usedMethods.add(Method.CREATE_REPEAT);
+        setListsUsed(true);
+        usedMethod(Method.CREATE_REPEAT);
         return null;
     }
 
     /**
+     * Visit the Number Property function (number is even/odd/prime/...) so that their helper methods cna be appended to the end of the source code
      *
      * @param mathNumPropFunct
      * @return
      */
     @Override public Void visitMathNumPropFunct(MathNumPropFunct<Void> mathNumPropFunct) {
         if (mathNumPropFunct.getFunctName().getOpSymbol().equals("PRIME")) {
-            this.usedMethods.add(Method.PRIME);
+            usedMethod(Method.PRIME);
         }
 
         return null;
     }
 
     /**
+     * Visit the Math on list function (sum/average/min/max) so that their helper methods cna be appended to the end of the source code
      *
      * @param mathOnListFunct
      * @return
@@ -103,16 +120,16 @@ public class EdisonUsedHardwareCollectorVisitor extends AbstractUsedHardwareColl
     @Override public Void visitMathOnListFunct(MathOnListFunct<Void> mathOnListFunct) {
         switch (mathOnListFunct.getFunctName().getOpSymbol()) {
             case "SUM":
-                this.usedMethods.add(Method.SUM);
+                usedMethod(Method.SUM);
                 break;
             case "MIN":
-                this.usedMethods.add(Method.MIN);
+                usedMethod(Method.MIN);
                 break;
             case "MAX":
-                this.usedMethods.add(Method.MAX);
+                usedMethod(Method.MAX);
                 break;
             case "AVERAGE":
-                this.usedMethods.add(Method.AVG);
+                usedMethod(Method.AVG);
                 break;
             default:
                 break;
@@ -142,8 +159,32 @@ public class EdisonUsedHardwareCollectorVisitor extends AbstractUsedHardwareColl
         super.check(phrasesSet);
     }
 
+    /**
+     * Returns all used helper methods (see {@link EdisonUsedHardwareCollectorVisitor#usedMethod(Method)}). If no methods are used,
+     * this method returns a new empty Set
+     *
+     * @return
+     */
     public Set<Method> getUsedMethods() {
+        if (this.usedMethods == null) {
+            //If no helper methods have been used, an empty set will be returned
+            return new HashSet<>();
+        }
         return this.usedMethods;
+    }
+
+    /**
+     * Helper method to list all used "NEPO helper methods" so that they can be appended to the end of the source code
+     *
+     * @param m the helper method that was called
+     */
+    private void usedMethod(Method m) {
+        if (this.usedMethods == null) {
+            this.usedMethods = new HashSet<>();
+            this.usedMethods.add(m);
+        } else {
+            this.usedMethods.add(m);
+        }
     }
 
 

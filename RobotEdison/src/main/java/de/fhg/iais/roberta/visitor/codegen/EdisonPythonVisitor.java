@@ -37,6 +37,7 @@ import java.util.StringJoiner;
 
 /**
  * This class visits the Blockly blocks for the Edison robot and translates them into EdPy Python2 code (https://github.com/Bdanilko/EdPy)
+ * @author Max Göckel (uzkns)
  */
 public class EdisonPythonVisitor extends AbstractPythonVisitor implements IEdisonVisitor<Void> {
 
@@ -69,7 +70,7 @@ public class EdisonPythonVisitor extends AbstractPythonVisitor implements IEdiso
     }
 
     /**
-     * Generates the program prefix, i.e. all preparations that need to be executed before the __main__ method is called
+     * Generates the program prefix, i.e. all preparations that need to be executed before Blockly generated code is reached
      *
      * @param withWrapping if the source code should be wrapped by prefix/suffix
      */
@@ -83,11 +84,10 @@ public class EdisonPythonVisitor extends AbstractPythonVisitor implements IEdiso
         this.sb.append("Ed.DistanceUnits = Ed.CM" + newLine); //TODO-MAX checken wie es mit time und cm aussieht (anm.: es sieht nicht gut aus)
         this.sb.append("Ed.Tempo = Ed.TEMPO_MEDIUM" + newLine + newLine);
         this.sb.append("#----------Blockly code---------------" + newLine + newLine);
-        this.sb.append("Ed.LineTrackerLed(Ed.ON)" + newLine);
+        this.sb.append("Ed.LineTrackerLed(Ed.ON)");
     }
 
     /**
-     * //TODO-MAX nlIndent increment decrement
      * Generates the program suffix, i.e. everything that will be appended to the very end of the source .py file
      * In the suffix are NEPO helper methods for things like sum, round, min, max, etc
      *
@@ -101,7 +101,7 @@ public class EdisonPythonVisitor extends AbstractPythonVisitor implements IEdiso
         nlIndent(); nlIndent();
         this.sb.append("#-----NEPO helper methods-------------"); nlIndent();
 
-        this.sb.append("def round(num): return ((num+5)/10)"); nlIndent();
+        this.sb.append("def round(num): return ((num+5)/10)"); nlIndent(); nlIndent(); //This method is used so often that it comes with every program
 
         for ( EdisonUsedHardwareCollectorVisitor.Method m : this.usedMethods) {
             switch (m) {
@@ -156,7 +156,6 @@ public class EdisonPythonVisitor extends AbstractPythonVisitor implements IEdiso
                     this.sb.append("return list");
                     decrIndentation();
                     nlIndent();
-
                     break;
                 case PRIME:
                     this.sb.append("def isPrime(number):");
@@ -212,7 +211,7 @@ public class EdisonPythonVisitor extends AbstractPythonVisitor implements IEdiso
      * @param connectConst to be visited
      */
     @Override public Void visitConnectConst(ConnectConst<Void> connectConst) {
-        //not needed I guess.. (idk what this does)
+        //not needed I guess.. (idk what this does) NOP
         return null;
     }
 
@@ -224,7 +223,7 @@ public class EdisonPythonVisitor extends AbstractPythonVisitor implements IEdiso
      * @param textPrintFunct to be visited
      */
     @Override public Void visitTextPrintFunct(TextPrintFunct<Void> textPrintFunct) {
-        //not needed in Edison
+        //NOP not needed in Edison
         return null;
     }
 
@@ -236,33 +235,7 @@ public class EdisonPythonVisitor extends AbstractPythonVisitor implements IEdiso
      * @param getSubFunct to be visited
      */
     @Override public Void visitGetSubFunct(GetSubFunct<Void> getSubFunct) {
-
-        return null;
-    }
-
-    /**
-     * Function to create a list
-     * visit a {@link ListCreate}.
-     *
-     * @param listCreate to be visited
-     */
-    @Override public Void visitListCreate(ListCreate<Void> listCreate) {
-        return null;
-    }
-
-    /**
-     * Function to create a List with repeated item
-     * visit a {@link ListRepeat}.
-     *
-     * @param listRepeat to be visited
-     */
-    @Override public Void visitListRepeat(ListRepeat<Void> listRepeat) {
-        this.sb.append("create_repeat(");
-        listRepeat.getParam().get(0).visit(this);
-        this.sb.append(", ");
-        listRepeat.getParam().get(1).visit(this);
-        this.sb.append(")");
-
+        //NOP Not supported by Edison
         return null;
     }
 
@@ -273,6 +246,144 @@ public class EdisonPythonVisitor extends AbstractPythonVisitor implements IEdiso
      * @param mathConstrainFunct to be visited
      */
     @Override public Void visitMathConstrainFunct(MathConstrainFunct<Void> mathConstrainFunct) {
+        //NOP
+        return null;
+    }
+
+    /**
+     * Function to get a random float between 0 and 1
+     * visit a {@link MathRandomFloatFunct}.
+     *
+     * @param mathRandomFloatFunct
+     */
+    @Override public Void visitMathRandomFloatFunct(MathRandomFloatFunct<Void> mathRandomFloatFunct) {
+        //NOP not supported by Edison robot
+        return null;
+    }
+
+    /**
+     * Function to get a random integer between MIN and MAX
+     * visit a {@link MathRandomIntFunct}.
+     *
+     * @param mathRandomIntFunct to be visited
+     */
+    @Override public Void visitMathRandomIntFunct(MathRandomIntFunct<Void> mathRandomIntFunct) {
+        //NOP not supported by Edison robot
+        return null;
+    }
+
+    /**
+     * Function to append text
+     * //NOP not needed
+     * visit a {@link TextJoinFunct}.
+     *
+     * @param textJoinFunct to be visited
+     */
+    @Override public Void visitTextJoinFunct(TextJoinFunct<Void> textJoinFunct) {
+        //NOP
+        return null;
+    }
+
+    /**
+     * Function to drive straight forward/backward with given power % and time/distance
+     * visit a {@link DriveAction}.
+     *
+     * @param driveAction to be visited
+     */
+    @Override public Void visitDriveAction(DriveAction<Void> driveAction) {
+        switch (driveAction.getDirection().toString()) {
+            case "FOREWARD":
+                this.sb.append("Ed.Drive(Ed.FORWARD, ");
+                break;
+            case "BACKWARD":
+                this.sb.append("Ed.Drive(Ed.BACKWARD, ");
+                break;
+        }
+
+        this.sb.append("round(");
+        driveAction.getParam().getSpeed().visit(this);
+        this.sb.append("), ");
+        driveAction.getParam().getSpeed().visit(this);
+        this.sb.append(")");
+
+        return null;
+    }
+
+    /**
+     * Function to get the index of the first occurrence of an element in a list
+     *
+     * @param indexOfFunct to be visited
+     * @return
+     */
+    @Override public Void visitIndexOfFunct(IndexOfFunct<Void> indexOfFunct) {
+        //NOP
+        return null;
+    }
+
+
+
+
+    //--------------------- already done --------------------- \\
+
+
+
+
+    /**
+     * Function to perform mathematics on a list (sum/average/min/max/...)
+     *
+     * @param mathOnListFunct to be visited
+     */
+    @Override public Void visitMathOnListFunct(MathOnListFunct<Void> mathOnListFunct) {
+        //TODO-MAX only use helper methods when really needed
+        switch (mathOnListFunct.getFunctName().getOpSymbol()) {
+            case "SUM":
+                this.sb.append("sum(");
+                break;
+            case "MIN":
+                this.sb.append("min(");
+                break;
+            case "MAX":
+                this.sb.append("max(");
+                break;
+            case "AVERAGE":
+                this.sb.append("avg(");
+                break;
+            default:
+                break;
+        }
+
+        mathOnListFunct.getParam().get(0).visit(this);
+        this.sb.append(")");
+        return null;
+    }
+
+    /**
+     * All Math blocks (Integers and Fractions) are checked here
+     * @param numConst
+     * @return
+     */
+    @Override public Void visitNumConst(NumConst<Void> numConst) {
+        if ( isInteger(numConst.getValue()) ) {
+            super.visitNumConst(numConst);
+        } else {
+            throw new IllegalArgumentException("Not an integer");
+        }
+        return null;
+    }
+
+    /**
+     * Visits the programs main task, i.e. the Blockly-blocks that are (indirectly) connected to the red "Start"-block.
+     * In this method, user-generated Blockly-methods are appended also
+     *
+     * @param mainTask the main task class to be visited
+     * @return null
+     */
+    @Override public Void visitMainTask(MainTask<Void> mainTask) {
+        StmtList<Void> variables = mainTask.getVariables();
+        variables.visit(this); //fill usedGlobalVarInFunctions with values
+
+        nlIndent();
+        generateUserDefinedMethods(); //Functions created by the user will be defined after the main function
         return null;
     }
 
@@ -326,105 +437,43 @@ public class EdisonPythonVisitor extends AbstractPythonVisitor implements IEdiso
     }
 
     /**
-     * visit a {@link MathOnListFunct}.
+     * Function to create a list
+     * visit a {@link ListCreate}.
      *
-     * @param mathOnListFunct to be visited
+     * @param listCreate to be visited
      */
-    @Override public Void visitMathOnListFunct(MathOnListFunct<Void> mathOnListFunct) {
-        //TODO-MAX only use helper methods when really needed
-        switch (mathOnListFunct.getFunctName().getOpSymbol()) {
-            case "SUM":
-                this.sb.append("sum(");
-                break;
-            case "MIN":
-                this.sb.append("min(");
-                break;
-            case "MAX":
-                this.sb.append("max(");
-                break;
-            case "AVERAGE":
-                this.sb.append("avg(");
-                break;
-            default:
-                break;
-        }
+    @Override public Void visitListCreate(ListCreate<Void> listCreate) {
+        int listSize = listCreate.getValue().get().size();
 
-        mathOnListFunct.getParam().get(0).visit(this);
+        this.sb.append("Ed.List(").append(listSize).append((", ["));
+        for (int i = 0; i < listSize; i++) {
+            listCreate.getValue().get().get(i).visit(this);
+            if (i < (listSize -1)) {
+                this.sb.append((","));
+            } else {
+                this.sb.append("]");
+            }
+        }
         this.sb.append(")");
+
         return null;
     }
 
     /**
-     * Function to get a random float between 0 and 1
-     * visit a {@link MathRandomFloatFunct}.
+     * Function to create a List with repeated item
+     * visit a {@link ListRepeat}.
      *
-     * @param mathRandomFloatFunct
+     * @param listRepeat to be visited
      */
-    @Override public Void visitMathRandomFloatFunct(MathRandomFloatFunct<Void> mathRandomFloatFunct) {
-        //not supported by Edison robot
+    @Override public Void visitListRepeat(ListRepeat<Void> listRepeat) {
+        this.sb.append("create_repeat(");
+        listRepeat.getParam().get(0).visit(this);
+        this.sb.append(", ");
+        listRepeat.getParam().get(1).visit(this);
+        this.sb.append(")");
+
         return null;
     }
-
-    /**
-     * Function to get a random integer between MIN and MAX
-     * visit a {@link MathRandomIntFunct}.
-     *
-     * @param mathRandomIntFunct to be visited
-     */
-    @Override public Void visitMathRandomIntFunct(MathRandomIntFunct<Void> mathRandomIntFunct) {
-        //not supported by Edison robot
-        return null;
-    }
-
-    /**
-     * Function to append text
-     * //NOP not needed
-     * visit a {@link TextJoinFunct}.
-     *
-     * @param textJoinFunct to be visited
-     */
-    @Override public Void visitTextJoinFunct(TextJoinFunct<Void> textJoinFunct) {
-        return null;
-    }
-
-    /**
-     * Function to drive straight forward/backward with given power % and time/distance
-     * visit a {@link DriveAction}.
-     *
-     * @param driveAction to be visited
-     */
-    @Override public Void visitDriveAction(DriveAction<Void> driveAction) {
-        return null;
-    }
-
-    /**
-     * Function to get the index of the first occurrence of an element in a list
-     *
-     * @param indexOfFunct to be visited
-     * @return
-     */
-    @Override public Void visitIndexOfFunct(IndexOfFunct<Void> indexOfFunct) {
-        return null;
-    }
-
-    @Override
-    public Void visitNumConst(NumConst<Void> numConst) {
-        // TODO Do we have always to cast to float
-        if ( isInteger(numConst.getValue()) ) {
-            super.visitNumConst(numConst);
-        } else {
-            throw new IllegalArgumentException("Not an integer");
-        }
-        return null;
-    }
-
-
-
-
-    //--------------------- already done --------------------- \\
-
-
-
 
     /**
      * Function to execute code when a key is pressed
@@ -433,11 +482,13 @@ public class EdisonPythonVisitor extends AbstractPythonVisitor implements IEdiso
      * @param keysSensor to be visited
      */
     @Override public Void visitKeysSensor(KeysSensor<Void> keysSensor) {
-        switch (keysSensor.getPort().toLowerCase()) {
-            case "rec":
+        switch (keysSensor.getPort()) {
+            case "REC":
                 this.sb.append("Ed.ReadKeypad(Ed.KEYPAD_ROUND)");
-            case "play":
+                break;
+            case "PLAY":
                 this.sb.append("Ed.ReadKeypad(Ed.KEYPAD_TRIANGLE)");
+                break;
             default:
         }
 
@@ -463,17 +514,17 @@ public class EdisonPythonVisitor extends AbstractPythonVisitor implements IEdiso
                 direction = "Ed.BACKWARD";
                 break;
         }
-        this.sb.append("Ed.DriveLeftMotor(" + direction + ", ");
+        this.sb.append("Ed.DriveLeftMotor(" + direction + ", round(");
         curveAction.getParamLeft().getSpeed().visit(this);
-        this.sb.append(", round(");
+        this.sb.append("), round(");
         curveAction.getParamLeft().getDuration().getValue().visit(this);
         this.sb.append("))");
 
-        this.sb.append(newLine);
+        nlIndent();
 
-        this.sb.append("Ed.DriveRightMotor(" + direction + ", ");
+        this.sb.append("Ed.DriveRightMotor(" + direction + ", round(");
         curveAction.getParamRight().getSpeed().visit(this);
-        this.sb.append(", round(");
+        this.sb.append("), round(");
         curveAction.getParamRight().getDuration().getValue().visit(this);
         this.sb.append("))");
 
@@ -501,7 +552,7 @@ public class EdisonPythonVisitor extends AbstractPythonVisitor implements IEdiso
         this.sb.append("round(");
         turnAction.getParam().getSpeed().visit(this);
         this.sb.append("), ");
-        turnAction.getParam().getDuration().getValue().visit(this);
+        turnAction.getParam().getDuration().getValue().visit(this); //TODO-MAX degree != distance
         this.sb.append(")");
 
         return null;
@@ -514,13 +565,13 @@ public class EdisonPythonVisitor extends AbstractPythonVisitor implements IEdiso
      * @param motorOnAction
      */
     @Override public Void visitMotorOnAction(MotorOnAction<Void> motorOnAction) {
-        switch (motorOnAction.getUserDefinedPort().toLowerCase()) {
-            case "lmotor":
+        switch (motorOnAction.getUserDefinedPort()) {
+            case "LMOTOR":
                 this.sb.append("Ed.DriveLeftMotor(Ed.FORWARD, round(");
                 motorOnAction.getParam().getSpeed().visit(this);
                 this.sb.append("), Ed.DISTANCE_UNLIMITED)");
                 break;
-            case "rmotor":
+            case "RMOTOR":
                 this.sb.append("Ed.DriveRightMotor(Ed.FORWARD, round(");
                 motorOnAction.getParam().getSpeed().visit(this);
                 this.sb.append("), Ed.DISTANCE_UNLIMITED)");
@@ -538,11 +589,11 @@ public class EdisonPythonVisitor extends AbstractPythonVisitor implements IEdiso
      * @param motorStopAction
      */
     @Override public Void visitMotorStopAction(MotorStopAction<Void> motorStopAction) {
-        switch (motorStopAction.getUserDefinedPort().toLowerCase()) {
-            case "lmotor":
+        switch (motorStopAction.getUserDefinedPort()) {
+            case "LMOTOR":
                 this.sb.append("Ed.DriveLeftMotor(Ed.STOP, Ed.SPEED_1, 0)");
                 break;
-            case "rmotor":
+            case "RMOTOR":
                 this.sb.append("Ed.DriveRightMotor(Ed.STOP, Ed.SPEED_1, 0)");
                 break;
             default:
@@ -572,22 +623,6 @@ public class EdisonPythonVisitor extends AbstractPythonVisitor implements IEdiso
     @Override public Void visitLengthOfIsEmptyFunct(LengthOfIsEmptyFunct<Void> lengthOfIsEmptyFunct) {
         this.sb.append("len( ");
         lengthOfIsEmptyFunct.getParam().get(0).visit(this);this.sb.append(")");
-        return null;
-    }
-
-    /**
-     * Visits the programs main task, i.e. the Blockly-blocks that are (indirectly) connected to the red "Start"-block.
-     * In this method, user-generated Blockly-methods are appended also
-     *
-     * @param mainTask the main task class to be visited
-     * @return null
-     */
-    @Override public Void visitMainTask(MainTask<Void> mainTask) {
-        StmtList<Void> variables = mainTask.getVariables();
-        variables.visit(this); //fill usedGlobalVarInFunctions with values
-
-        this.sb.append(newLine);
-        generateUserDefinedMethods(); //Functions created by the user will be defined after the main function
         return null;
     }
 
@@ -622,7 +657,6 @@ public class EdisonPythonVisitor extends AbstractPythonVisitor implements IEdiso
      * @param listGetIndex to be visited
      */
     @Override public Void visitListGetIndex(ListGetIndex<Void> listGetIndex) {
-
         listGetIndex.getParam().get(0).visit(this); //Name of list
         this.sb.append("[");
         listGetIndex.getParam().get(1).visit(this); //index (from 0)
@@ -657,19 +691,19 @@ public class EdisonPythonVisitor extends AbstractPythonVisitor implements IEdiso
         //EdPy does not support floats
         switch ( mathConst.getMathConst() ) {
             case PI:
-                this.sb.append("3 //Pi");
+                this.sb.append("3");
                 break;
             case E:
-                this.sb.append("3 //e");
+                this.sb.append("3");
                 break;
             case GOLDEN_RATIO:
-                this.sb.append("2 //Golden Ratio");
+                this.sb.append("2");
                 break;
             case SQRT2:
-                this.sb.append("1 //sqrt(2)");
+                this.sb.append("1");
                 break;
             case SQRT1_2:
-                this.sb.append("1 //sqrt(0.5)");
+                this.sb.append("1");
                 break;
             default:
                 break;
@@ -684,7 +718,7 @@ public class EdisonPythonVisitor extends AbstractPythonVisitor implements IEdiso
      * @param lightAction to be visited
      */
     @Override public Void visitLightAction(LightAction<Void> lightAction) {
-        switch (lightAction.getPort().toLowerCase()) {
+        switch (lightAction.getPort()) {
             case "RLED":
                 this.sb.append("Ed.RightLed(Ed.ON)");
                 break;
