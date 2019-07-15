@@ -24,6 +24,8 @@ public class EdisonConfiguration extends Configuration {
         ConfigurationComponent leftLight = new ConfigurationComponent("leftlight", false, "LLIGHT", "Left Light Sensor", Collections.emptyMap());
         ConfigurationComponent rightLight = new ConfigurationComponent("rightlight", false, "RLIGHT", "Right Light Sensor", Collections.emptyMap());
         ConfigurationComponent sound = new ConfigurationComponent("sound", true, "SOUND", "Sound Sensor", Collections.emptyMap());
+        ConfigurationComponent playButton = new ConfigurationComponent("play", true, "PLAY", "Play Button", Collections.emptyMap());
+        ConfigurationComponent recordButton = new ConfigurationComponent("record", true, "REC", "Record Button", Collections.emptyMap());
 
         ArrayList<ConfigurationComponent> components = Lists.newArrayList(
             leftMotor,
@@ -36,7 +38,9 @@ public class EdisonConfiguration extends Configuration {
             lineTracker,
             leftLight,
             rightLight,
-            sound);
+            sound,
+            playButton,
+            recordButton);
 
         config = new Configuration.Builder().addComponents(components).build();
     }
