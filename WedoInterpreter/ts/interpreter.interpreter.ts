@@ -282,6 +282,23 @@ export class Interpreter {
                     n.writePinAction( pin, mode, value );
                     return 0;
                 }
+                case C.LIST_OPERATION: {
+                    const op = stmt[C.OP];
+                    const loc = stmt[C.POSITION];
+                    const value = s.pop();
+                    let ix = 0;
+                    if ( loc != C.LAST && loc != C.FIRST ) {
+                        ix = s.pop();
+                    }
+                    let list = s.pop();
+                    ix = this.getIndex( list, loc, ix )
+                    if ( op == C.SET ) {
+                        list[ix] = value;
+                    } else if ( op == C.INSERT ) {
+                        list.splice(ix, 0, value);
+                    }
+                    break;
+                }
                 default:
                     U.dbcException( "invalid stmt op: " + opCode );
             }
@@ -527,11 +544,27 @@ export class Interpreter {
 
                     }
                         break;
-             
+                    case C.LIST_GET_SUBLIST: {
+                        const position = expr[C.POSITION];
+                        let start_ix;
+                        let end_ix;
+                        if ( position[1] != C.LAST ) {
+                            end_ix = s.pop();
+                        }
+                        if ( position[0] != C.FIRST ) {
+                            start_ix = s.pop();
+                        }
+                        let list = s.pop();
+                        start_ix = this.getIndex( list, position[0], start_ix );
+                        end_ix = this.getIndex( list, position[1], end_ix ) + 1;
+                        s.push( list.slice( start_ix, end_ix ) );
+                    }
+                        break;
+
                     default:
                         throw "Invalid Op on List Function Name";
                 }
-                
+
                 break;
             }
             case C.BINARY: {
@@ -687,8 +720,22 @@ export class Interpreter {
         return Math.floor( Math.random() * Math.floor( max ) );
     }
 
-    private round2precision( x: number, precision: number ): number {
-        var y = +x + ( precision === undefined ? 0.5 : precision / 2 );
-        return y - ( y % ( precision === undefined ? 1 : +precision ) );
+    //    private round2precision( x: number, precision: number ): number {
+    //        var y = +x + ( precision === undefined ? 0.5 : precision / 2 );
+    //        return y - ( y % ( precision === undefined ? 1 : +precision ) );
+    //    }
+
+    private getIndex( list: Array<any>, loc: string, ix: number ): number {
+        if ( loc == C.FROM_START ) {
+            return ix;
+        } else if ( loc == C.FROM_END ) {
+            return list.length - 1 - ix;
+        } else if ( loc == C.FIRST ) {
+            return 0;
+        } else if ( loc == C.LAST ) {
+            return list.length - 1;
+        } else {
+            throw 'Unhandled option (lists_getSublist).';
+        }
     }
 }

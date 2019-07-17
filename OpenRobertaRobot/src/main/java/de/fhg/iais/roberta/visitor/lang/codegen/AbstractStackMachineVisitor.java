@@ -510,7 +510,15 @@ public abstract class AbstractStackMachineVisitor<V> implements ILanguageVisitor
 
     @Override
     public V visitGetSubFunct(GetSubFunct<V> getSubFunct) {
-        throw new DbcException("Operation not supported");
+        getSubFunct.getParam().forEach(x -> x.visit(this));
+
+        JSONObject o =
+            mk(C.EXPR)
+                .put(C.EXPR, C.LIST_OPERATION)
+                .put(C.OP, C.LIST_GET_SUBLIST)
+                .put(C.POSITION, getSubFunct.getStrParam().stream().map(x -> x.toString().toLowerCase()).toArray());
+
+        return app(o);
     }
 
     @Override
@@ -541,8 +549,7 @@ public abstract class AbstractStackMachineVisitor<V> implements ILanguageVisitor
     public V visitListSetIndex(ListSetIndex<V> listSetIndex) {
         listSetIndex.getParam().forEach(x -> x.visit(this));
         JSONObject o =
-            mk(C.EXPR)
-                .put(C.EXPR, C.LIST_OPERATION)
+            mk(C.LIST_OPERATION)
                 .put(C.OP, listSetIndex.getElementOperation().toString().toLowerCase())
                 .put(C.POSITION, listSetIndex.getLocation().toString().toLowerCase());
         return app(o);

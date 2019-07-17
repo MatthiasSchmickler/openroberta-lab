@@ -270,6 +270,24 @@ define(["require", "exports", "interpreter.state", "interpreter.constants", "int
                         n.writePinAction(pin, mode, value);
                         return 0;
                     }
+                    case C.LIST_OPERATION: {
+                        var op = stmt[C.OP];
+                        var loc = stmt[C.POSITION];
+                        var value = s.pop();
+                        var ix = 0;
+                        if (loc != C.LAST && loc != C.FIRST) {
+                            ix = s.pop();
+                        }
+                        var list = s.pop();
+                        ix = this.getIndex(list, loc, ix);
+                        if (op == C.SET) {
+                            list[ix] = value;
+                        }
+                        else if (op == C.INSERT) {
+                            list.splice(ix, 0, value);
+                        }
+                        break;
+                    }
                     default:
                         U.dbcException("invalid stmt op: " + opCode);
                 }
@@ -584,6 +602,23 @@ define(["require", "exports", "interpreter.state", "interpreter.constants", "int
                                 }
                             }
                             break;
+                        case C.LIST_GET_SUBLIST:
+                            {
+                                var position = expr[C.POSITION];
+                                var start_ix = void 0;
+                                var end_ix = void 0;
+                                if (position[1] != C.LAST) {
+                                    end_ix = s.pop();
+                                }
+                                if (position[0] != C.FIRST) {
+                                    start_ix = s.pop();
+                                }
+                                var list = s.pop();
+                                start_ix = this.getIndex(list, position[0], start_ix);
+                                end_ix = this.getIndex(list, position[1], end_ix) + 1;
+                                s.push(list.slice(start_ix, end_ix));
+                            }
+                            break;
                         default:
                             throw "Invalid Op on List Function Name";
                     }
@@ -775,9 +810,26 @@ define(["require", "exports", "interpreter.state", "interpreter.constants", "int
         Interpreter.prototype.getRandomInt = function (max) {
             return Math.floor(Math.random() * Math.floor(max));
         };
-        Interpreter.prototype.round2precision = function (x, precision) {
-            var y = +x + (precision === undefined ? 0.5 : precision / 2);
-            return y - (y % (precision === undefined ? 1 : +precision));
+        //    private round2precision( x: number, precision: number ): number {
+        //        var y = +x + ( precision === undefined ? 0.5 : precision / 2 );
+        //        return y - ( y % ( precision === undefined ? 1 : +precision ) );
+        //    }
+        Interpreter.prototype.getIndex = function (list, loc, ix) {
+            if (loc == C.FROM_START) {
+                return ix;
+            }
+            else if (loc == C.FROM_END) {
+                return list.length - 1 - ix;
+            }
+            else if (loc == C.FIRST) {
+                return 0;
+            }
+            else if (loc == C.LAST) {
+                return list.length - 1;
+            }
+            else {
+                throw 'Unhandled option (lists_getSublist).';
+            }
         };
         return Interpreter;
     }());
