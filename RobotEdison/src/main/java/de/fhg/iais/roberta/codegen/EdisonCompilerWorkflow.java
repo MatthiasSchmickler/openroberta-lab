@@ -31,7 +31,7 @@ public class EdisonCompilerWorkflow extends AbstractCompilerWorkflow {
     /**
      * Constructor, calls super() constructor
      *
-     * @param pluginProperties the Edison's plugins properties, from edison.properties //TODO-MAX Fact check
+     * @param pluginProperties the Edison's plugins properties, from edison.properties
      */
     public EdisonCompilerWorkflow(PluginProperties pluginProperties) {
         super(pluginProperties);
@@ -67,7 +67,7 @@ public class EdisonCompilerWorkflow extends AbstractCompilerWorkflow {
     /**
      * Stores the generated program into a directory
      *
-     * @param token        the credential supplied by the user. Needed to provide a unique directory name for crosscompilation
+     * @param token        the credential supplied by the user. Needed to provide a unique directory name for cross-compilation
      * @param programName  name of the program
      * @param language     locale for messages
      * @param flagProvider TODO
@@ -105,8 +105,8 @@ public class EdisonCompilerWorkflow extends AbstractCompilerWorkflow {
     }
 
     /**
-     * Builds the WAV file from the .py source file using the EdPy Python2 compiler (https://github.com/Bdanilko/EdPy) by starting an external Python2 process.
-     * The file will be stored as {@link PluginProperties#getTempDir()}/token/source/tokXXXXX.wav and also in {@link #compiledWav} as a Base64 String.
+     * Builds the WAV file from the .py source file using the EdPy Python2 compiler (https://github.com/OpenRoberta/EdPy) by starting an external Python2 process.
+     * The file will be stored as {@link PluginProperties#getTempDir()}/token/source/XXXX.wav and also in {@link #compiledWav} as a Base64 String.
      *
      * @param token  the credential supplied by the user. Needed to provide a unique temporary directory name
      * @param pyFile the source file name
@@ -124,7 +124,7 @@ public class EdisonCompilerWorkflow extends AbstractCompilerWorkflow {
         ProcessBuilder
             processBuilder =
             new ProcessBuilder("/usr/bin/python2", compilerDir + "EdPy.py", compilerDir + "en_lang.json", sourceFilePath + pyFile + ".py",
-                "-t", targetFilePath + pyFile + ".wav");
+                "-t", targetFilePath + pyFile + ".wav"); //TODO-MAX /usr/bin/python2 geht nur bei Unix
 
         try {
             processBuilder.redirectOutput(ProcessBuilder.Redirect.INHERIT);

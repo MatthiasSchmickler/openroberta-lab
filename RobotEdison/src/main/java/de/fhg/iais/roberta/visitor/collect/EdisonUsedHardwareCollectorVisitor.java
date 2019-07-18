@@ -29,18 +29,6 @@ public class EdisonUsedHardwareCollectorVisitor extends AbstractUsedHardwareColl
         check(programPhrases);
     }
 
-    /**
-     * The Sensors that can use the IR LEDs
-     */
-    public enum Sensor {
-        OBSTACLE, //The infrared obstacle detection
-        IRSENDER, //IR Code sender...
-        IRSEEKER, //...and receiver
-        NONE //No method (standard from start)
-    }
-    //TODO-MAX IR seeker, IR RC, Obstacle detection share IR LEDs
-    private Sensor infraredBlocker = Sensor.NONE; //saves which Sensor uses the IR LEDs
-
 
     /**
      * Blockly Blocks that need an extra helper method in the source code
@@ -59,34 +47,8 @@ public class EdisonUsedHardwareCollectorVisitor extends AbstractUsedHardwareColl
     private HashSet<Method> usedMethods; //All needed helper methods as a Set
 
 
-    @Override public Void visitLightSensor(LightSensor<Void> lightSensor) {
-        return null;
-    }
-
-    @Override public Void visitInfraredSensor(InfraredSensor<Void> infraredSensor) {
-        return null;
-    }
-
-    @Override public Void visitIRSeekerSensor(IRSeekerSensor<Void> irSeekerSensor) {
-        return null;
-    }
-
-    @Override public Void visitDriveAction(DriveAction<Void> driveAction) {
-        return null;
-    }
-
-    @Override public Void visitCurveAction(CurveAction<Void> curveAction) {
-        return null;
-    }
-
-    @Override public Void visitTurnAction(TurnAction<Void> turnAction) {
-        return null;
-    }
-
-
-    //TODO-MAX JavaDoc zuende
     /**
-     * Visit the "Create List with repeated item" function so that their helper methods cna be appended to the end of the source code
+     * Visit the "Create List with repeated item" function so that their helper methods can be appended to the end of the source code
      *
      * @param listRepeat
      * @return
@@ -98,7 +60,7 @@ public class EdisonUsedHardwareCollectorVisitor extends AbstractUsedHardwareColl
     }
 
     /**
-     * Visit the Number Property function (number is even/odd/prime/...) so that their helper methods cna be appended to the end of the source code
+     * Visit the Number Property function (number is even/odd/prime/...) so that their helper methods can be appended to the end of the source code
      *
      * @param mathNumPropFunct
      * @return
@@ -112,7 +74,7 @@ public class EdisonUsedHardwareCollectorVisitor extends AbstractUsedHardwareColl
     }
 
     /**
-     * Visit the Math on list function (sum/average/min/max) so that their helper methods cna be appended to the end of the source code
+     * Visit the Math on list function (sum/average/min/max) so that their helper methods can be appended to the end of the source code
      *
      * @param mathOnListFunct
      * @return
@@ -120,16 +82,16 @@ public class EdisonUsedHardwareCollectorVisitor extends AbstractUsedHardwareColl
     @Override public Void visitMathOnListFunct(MathOnListFunct<Void> mathOnListFunct) {
         switch (mathOnListFunct.getFunctName().getOpSymbol()) {
             case "SUM":
-                usedMethod(Method.SUM);
+                this.usedMethod(Method.SUM);
                 break;
             case "MIN":
-                usedMethod(Method.MIN);
+                this.usedMethod(Method.MIN);
                 break;
             case "MAX":
-                usedMethod(Method.MAX);
+                this.usedMethod(Method.MAX);
                 break;
             case "AVERAGE":
-                usedMethod(Method.AVG);
+                this.usedMethod(Method.AVG);
                 break;
             default:
                 break;
@@ -141,7 +103,6 @@ public class EdisonUsedHardwareCollectorVisitor extends AbstractUsedHardwareColl
     @Override public Void visitMotorDriveStopAction(MotorDriveStopAction<Void> stopAction) {
         return null;
     }
-
 
     @Override public Void visitMotorOnAction(MotorOnAction<Void> motorOnAction) {
         return null;
@@ -157,6 +118,22 @@ public class EdisonUsedHardwareCollectorVisitor extends AbstractUsedHardwareColl
 
     @Override protected void check(ArrayList<ArrayList<Phrase<Void>>> phrasesSet) {
         super.check(phrasesSet);
+    }
+
+    @Override public Void visitLightSensor(LightSensor<Void> lightSensor) {
+        return null;
+    }
+
+    @Override public Void visitDriveAction(DriveAction<Void> driveAction) {
+        return null;
+    }
+
+    @Override public Void visitCurveAction(CurveAction<Void> curveAction) {
+        return null;
+    }
+
+    @Override public Void visitTurnAction(TurnAction<Void> turnAction) {
+        return null;
     }
 
     /**
@@ -186,6 +163,4 @@ public class EdisonUsedHardwareCollectorVisitor extends AbstractUsedHardwareColl
             this.usedMethods.add(m);
         }
     }
-
-
 }

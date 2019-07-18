@@ -277,6 +277,10 @@
     <block type="robLists_getIndex"></block>
     <block type="robLists_setIndex"></block>
   </category>
+  <category name="TOOLBOX_COMMUNICATION" svg="true">
+    <block type="robCommunication_sendBlock"></block>
+    <block type="robCommunication_receiveBlock"></block>
+  </category>
 
   <category name="TOOLBOX_VARIABLE" custom="VARIABLE" svg="true"> </category>
 

@@ -1,5 +1,6 @@
 package de.fhg.iais.roberta.visitor.hardware;
 
+import de.fhg.iais.roberta.syntax.action.communication.*;
 import de.fhg.iais.roberta.syntax.action.light.LightStatusAction;
 import de.fhg.iais.roberta.syntax.action.motor.MotorGetPowerAction;
 import de.fhg.iais.roberta.syntax.action.motor.MotorSetPowerAction;
@@ -7,24 +8,51 @@ import de.fhg.iais.roberta.syntax.action.sound.VolumeAction;
 import de.fhg.iais.roberta.syntax.lang.functions.TextPrintFunct;
 import de.fhg.iais.roberta.syntax.sensor.generic.*;
 import de.fhg.iais.roberta.util.dbc.DbcException;
-import de.fhg.iais.roberta.visitor.hardware.actor.IDifferentialMotorVisitor;
-import de.fhg.iais.roberta.visitor.hardware.actor.ILightVisitor;
-import de.fhg.iais.roberta.visitor.hardware.actor.IMotorVisitor;
-import de.fhg.iais.roberta.visitor.hardware.actor.ISoundVisitor;
+import de.fhg.iais.roberta.visitor.hardware.actor.*;
 import de.fhg.iais.roberta.visitor.hardware.sensor.ISensorVisitor;
 
-public interface IEdisonVisitor<V> extends ILightVisitor<V>, IDifferentialMotorVisitor<V>, ISoundVisitor<V>, ISensorVisitor<V> {
+public interface IEdisonVisitor<V> extends
+    ILightVisitor<V>, //for the red LEDs
+    IDifferentialMotorVisitor<V>, //for the differential motor
+    ISoundVisitor<V>, //for the sound sensor and beeper
+    ISensorVisitor<V>, //all other sensors (not all used)
+    IBluetoothVisitor<V> { //IR send/receive
+
+    /**
+     * visit a {@link BluetoothConnectAction}.
+     *
+     * @param bluetoothConnectAction to be visited
+     */
+    @Override
+    default V visitBluetoothConnectAction(BluetoothConnectAction<V> bluetoothConnectAction) {
+        throw new DbcException("operation not supported");
+    }
+
+    /**
+     * visit a {@link BluetoothWaitForConnectionAction}.
+     *
+     * @param bluetoothWaitForConnection to be visited
+     */
+    @Override
+    default V visitBluetoothWaitForConnectionAction(BluetoothWaitForConnectionAction<V> bluetoothWaitForConnection) {
+        throw new DbcException("operation not supported");
+    }
+
+    /**
+     * visit a {@link BluetoothCheckConnectAction}.
+     *
+     * @param bluetoothCheckConnectAction to be visited
+     */
+    @Override
+    default V visitBluetoothCheckConnectAction(BluetoothCheckConnectAction<V> bluetoothCheckConnectAction) {
+        throw new DbcException("operation not supported");
+    }
 
     @Override
     default V visitVolumeAction(VolumeAction<V> volumeAction) {
         throw new DbcException("operation not supported");
     }
 
-    /**
-     * visit a {@link LightStatusAction}.
-     *
-     * @param lightStatusAction to be visited
-     */
     @Override
     default V visitLightStatusAction(LightStatusAction<V> lightStatusAction) {
         return null;

@@ -13,15 +13,15 @@ public class EdisonConfiguration extends Configuration {
     private static final Configuration config;
 
     static {
+
         ConfigurationComponent leftMotor = new ConfigurationComponent("leftmotor", true, "LMOTOR", "Left Motor", Collections.emptyMap());
         ConfigurationComponent rightMotor = new ConfigurationComponent("rightmotor", true, "RMOTOR", "Right Motor", Collections.emptyMap());
         ConfigurationComponent leftLED = new ConfigurationComponent("leftled", true, "LLED", "Left LED", Collections.emptyMap());
         ConfigurationComponent rightLED = new ConfigurationComponent("rightled", true, "RLED", "Right LED", Collections.emptyMap());
         ConfigurationComponent irLED = new ConfigurationComponent("infraredled", false, "IRLED", "IR LED", Collections.emptyMap());
-        ConfigurationComponent irObstacle = new ConfigurationComponent("infraredobstacle", false, "IROBSTACLE", "IR Obstacle", Collections.emptyMap());
-        ConfigurationComponent irRecv = new ConfigurationComponent("infraredreceiver", false, "IRRECEIVER", "IR Receiver", Collections.emptyMap());
+        ConfigurationComponent obstacleDetector = new ConfigurationComponent("OBSTACLEDETECTOR", false, "OBSTACLEDETECTOR", "OBSTACLEDETECTOR", Collections.emptyMap());
         ConfigurationComponent lineTracker = new ConfigurationComponent("linetracker", false, "LINETRACKER", "Line Tracker", Collections.emptyMap());
-        ConfigurationComponent leftLight = new ConfigurationComponent("leftlight", false, "LLIGHT", "Left Light Sensor", Collections.emptyMap());
+        ConfigurationComponent leftLight = new ConfigurationComponent("LLIGHT", false, "LLIGHT", "LLIGHT", Collections.emptyMap());
         ConfigurationComponent rightLight = new ConfigurationComponent("rightlight", false, "RLIGHT", "Right Light Sensor", Collections.emptyMap());
         ConfigurationComponent sound = new ConfigurationComponent("sound", true, "SOUND", "Sound Sensor", Collections.emptyMap());
         ConfigurationComponent playButton = new ConfigurationComponent("play", true, "PLAY", "Play Button", Collections.emptyMap());
@@ -33,8 +33,7 @@ public class EdisonConfiguration extends Configuration {
             leftLED,
             rightLED,
             irLED,
-            irObstacle,
-            irRecv,
+            obstacleDetector,
             lineTracker,
             leftLight,
             rightLight,
