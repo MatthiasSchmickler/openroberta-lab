@@ -5,6 +5,8 @@ import de.fhg.iais.roberta.components.UsedActor;
 import de.fhg.iais.roberta.components.UsedSensor;
 import de.fhg.iais.roberta.inter.mode.action.ILanguage;
 import de.fhg.iais.roberta.syntax.Phrase;
+import de.fhg.iais.roberta.syntax.action.communication.BluetoothReceiveAction;
+import de.fhg.iais.roberta.syntax.action.communication.BluetoothSendAction;
 import de.fhg.iais.roberta.syntax.action.light.LightAction;
 import de.fhg.iais.roberta.syntax.action.light.LightStatusAction;
 import de.fhg.iais.roberta.syntax.action.motor.MotorOnAction;
@@ -25,7 +27,7 @@ import de.fhg.iais.roberta.syntax.lang.functions.*;
 import de.fhg.iais.roberta.syntax.lang.stmt.StmtList;
 import de.fhg.iais.roberta.syntax.lang.stmt.WaitStmt;
 import de.fhg.iais.roberta.syntax.lang.stmt.WaitTimeStmt;
-import de.fhg.iais.roberta.syntax.sensor.generic.KeysSensor;
+import de.fhg.iais.roberta.syntax.sensor.generic.*;
 import de.fhg.iais.roberta.util.dbc.Assert;
 import de.fhg.iais.roberta.visitor.collect.EdisonUsedHardwareCollectorVisitor;
 import de.fhg.iais.roberta.visitor.hardware.IEdisonVisitor;
@@ -37,6 +39,7 @@ import java.util.StringJoiner;
 
 /**
  * This class visits the Blockly blocks for the Edison robot and translates them into EdPy Python2 code (https://github.com/Bdanilko/EdPy)
+ * Many methods are not supported (N O P) because the Edison robot does not allow the import of any Python module (f.e. math)
  * @author Max Göckel (uzkns)
  */
 public class EdisonPythonVisitor extends AbstractPythonVisitor implements IEdisonVisitor<Void> {
@@ -47,6 +50,25 @@ public class EdisonPythonVisitor extends AbstractPythonVisitor implements IEdiso
     protected final Set<EdisonUsedHardwareCollectorVisitor.Method> usedMethods;
     protected ILanguage lang;
     private String newLine = System.getProperty("line.separator");
+
+    private enum IRComponent {
+        OBSTACLE, IRSENDER, IRSEEKER, NONE
+    }
+
+    private IRComponent currentBlock = IRComponent.NONE; //Saves which sensor/actor uses the IR LEDs
+
+
+    /**
+     * The Sensors that can use the IR LEDs
+     */
+    public enum Sensor {
+        OBSTACLE, //The infrared obstacle detection
+        IRSENDER, //IR Code sender...
+        IRSEEKER, //...and receiver
+        NONE //No method (standard from start)
+    }
+    //TODO-MAX IR seeker, IR RC, Obstacle detection share IR LEDs
+    private Sensor infraredBlocker = Sensor.NONE; //saves which Sensor uses the IR LEDs
 
 
     /**
@@ -81,7 +103,7 @@ public class EdisonPythonVisitor extends AbstractPythonVisitor implements IEdiso
         this.sb.append("#-------------Setup-------------------" + newLine + newLine);
         this.sb.append("import Ed" + newLine);
         this.sb.append("Ed.EdisonVersion = Ed.V2" + newLine + newLine);
-        this.sb.append("Ed.DistanceUnits = Ed.CM" + newLine); //TODO-MAX checken wie es mit time und cm aussieht (anm.: es sieht nicht gut aus)
+        this.sb.append("Ed.DistanceUnits = Ed.CM" + newLine);
         this.sb.append("Ed.Tempo = Ed.TEMPO_MEDIUM" + newLine + newLine);
         this.sb.append("#----------Blockly code---------------" + newLine + newLine);
         this.sb.append("Ed.LineTrackerLed(Ed.ON)");
@@ -285,6 +307,144 @@ public class EdisonPythonVisitor extends AbstractPythonVisitor implements IEdiso
     }
 
     /**
+     * Function to get the index of the first occurrence of an element in a list
+     *
+     * @param indexOfFunct to be visited
+     * @return
+     */
+    @Override public Void visitIndexOfFunct(IndexOfFunct<Void> indexOfFunct) {
+        //NOP
+        return null;
+    }
+
+
+
+
+    //--------------------- implemented/supported methods --------------------- \\
+
+
+
+
+    /**
+     * visit a {@link InfraredSensor}.
+     *
+     * @param infraredSensor to be visited
+     */
+    @Override public Void visitInfraredSensor(InfraredSensor<Void> infraredSensor) {
+        if (this.currentBlock != IRComponent.OBSTACLE) {
+            this.sb.append("Ed.ObstacleDetectionBeam(Ed.ON)");
+            this.currentBlock = IRComponent.OBSTACLE;
+            nlIndent();
+        }
+
+        this.sb.append("Ed.ReadObstacleDetection() == Ed.OBSTACLE_");
+
+        switch (infraredSensor.getMode()) {
+            case "OBSTACLE_AHEAD":
+                this.sb.append("AHEAD");
+                break;
+            case "OBSTACLE_LEFT":
+                this.sb.append("LEFT");
+                break;
+            case "OBSTACLE_RIGHT":
+                this.sb.append("RIGHT");
+                break;
+
+        }
+        return null;
+    }
+
+    /**
+     * visit a {@link InfraredSensor}.
+     *
+     * @param irSeekerSensor
+     */
+    @Override public Void visitIRSeekerSensor(IRSeekerSensor<Void> irSeekerSensor) {
+        if (this.currentBlock == IRComponent.OBSTACLE) {
+            this.sb.append("Ed.ObstacleDetectionBeam(Ed.OFF)");
+            this.currentBlock = IRComponent.IRSEEKER;
+            nlIndent();
+        }
+
+        switch (irSeekerSensor.getMode()) {
+            case "RC_CODE":
+                this.sb.append("Ed.ReadRemote()");
+                break;
+            case "EDISON_CODE":
+                this.sb.append("Ed.ReadIRData()");
+                break;
+        }
+        return null;
+    }
+
+    //TODO-MAX JavaDocs
+    /**
+     * visit a {@link LightSensor}.
+     *
+     * @param lightSensor
+     */
+    @Override public Void visitLightSensor(LightSensor<Void> lightSensor) {
+        switch (lightSensor.getPort()) {
+            case "LLIGHT":
+                this.sb.append("Ed.ReadLeftLightLevel()");
+                break;
+            case "RLIGHT":
+                this.sb.append("Ed.ReadRightLightLevel()");
+                break;
+            case "LINETRACKER":
+                this.sb.append("Ed.ReadLineTracker()");
+                break;
+        }
+
+        return null;
+    }
+
+    /**
+     * visit a {@link SoundSensor}.
+     *
+     * @param soundSensor
+     */
+    @Override public Void visitSoundSensor(SoundSensor<Void> soundSensor) {
+        this.sb.append("Ed.ReadClapSensor() == Ed.CLAP_DETECTED");
+        return null;
+    }
+
+    /**
+     * visit a {@link BluetoothRecieveAction}.
+     *
+     * @param bluetoothReceiveAction
+     */
+    @Override public Void visitBluetoothReceiveAction(BluetoothReceiveAction<Void> bluetoothReceiveAction) {
+        if (this.currentBlock == IRComponent.OBSTACLE) {
+            this.sb.append("Ed.ObstacleDetectionBeam(Ed.OFF)");
+            this.currentBlock = IRComponent.IRSEEKER;
+            nlIndent();
+        }
+
+        this.sb.append("Ed.ReadIRData()");
+        return null;
+    }
+
+    /**
+     * visit a {@link BluetoothSendAction}.
+     *
+     * @param bluetoothSendAction to be visited
+     */
+    @Override public Void visitBluetoothSendAction(BluetoothSendAction<Void> bluetoothSendAction) {
+        if (this.currentBlock == IRComponent.OBSTACLE) {
+            this.sb.append("Ed.ObstacleDetectionBeam(Ed.OFF)");
+            this.currentBlock = IRComponent.IRSENDER;
+            nlIndent();
+        }
+
+        this.sb.append("Ed.SendIRData(");
+        bluetoothSendAction.getMsg().visit(this);
+        this.sb.append(")");
+
+        return null;
+    }
+
+    /**
      * Function to drive straight forward/backward with given power % and time/distance
      * visit a {@link DriveAction}.
      *
@@ -310,31 +470,11 @@ public class EdisonPythonVisitor extends AbstractPythonVisitor implements IEdiso
     }
 
     /**
-     * Function to get the index of the first occurrence of an element in a list
-     *
-     * @param indexOfFunct to be visited
-     * @return
-     */
-    @Override public Void visitIndexOfFunct(IndexOfFunct<Void> indexOfFunct) {
-        //NOP
-        return null;
-    }
-
-
-
-
-    //--------------------- already done --------------------- \\
-
-
-
-
-    /**
      * Function to perform mathematics on a list (sum/average/min/max/...)
      *
      * @param mathOnListFunct to be visited
      */
     @Override public Void visitMathOnListFunct(MathOnListFunct<Void> mathOnListFunct) {
-        //TODO-MAX only use helper methods when really needed
         switch (mathOnListFunct.getFunctName().getOpSymbol()) {
             case "SUM":
                 this.sb.append("sum(");
@@ -559,7 +699,7 @@ public class EdisonPythonVisitor extends AbstractPythonVisitor implements IEdiso
     }
 
     /**
-     * Function to turn the motors to a set power%
+     * Function to turn the motors to a set power-%
      * visit a {@link MotorOnAction}.
      *
      * @param motorOnAction
@@ -615,7 +755,7 @@ public class EdisonPythonVisitor extends AbstractPythonVisitor implements IEdiso
 
     /**
      * Function to find out the length of list or if it is empty
-     * //NOP is empty not supported
+     * //TODO-MAX NOP is empty not supported
      * visit a {@link LengthOfIsEmptyFunct}.
      *
      * @param lengthOfIsEmptyFunct to be visited
@@ -686,7 +826,7 @@ public class EdisonPythonVisitor extends AbstractPythonVisitor implements IEdiso
      * @param mathConst to be visited
      */
     @Override public Void visitMathConst(MathConst<Void> mathConst) {
-
+        //TODO-MAX delete this from Blockly
         //EdPy does not support importing the math module so every math constant has to be rounded.
         //EdPy does not support floats
         switch ( mathConst.getMathConst() ) {
@@ -810,17 +950,13 @@ public class EdisonPythonVisitor extends AbstractPythonVisitor implements IEdiso
         this.sb.append("Ed.PlayTune(");
         switch (playFileAction.getFileName().toLowerCase()) {
             case "0":
-                this.sb.append("Ed.TuneString(25, \"d4e4f4e4d4c4n2d4e4f4e4d1z\")");
-                break;
+
             case "1":
-                this.sb.append("Ed.TuneString(25, \"d4e4f4e4d4c4n2d4e4f4e4d1z\")");
-                break;
+
             case "2":
-                this.sb.append("Ed.TuneString(25, \"d4e4f4e4d4c4n2d4e4f4e4d1z\")");
-                break;
+
             case "3":
-                this.sb.append("Ed.TuneString(25, \"d4e4f4e4d4c4n2d4e4f4e4d1z\")");
-                break;
+
             case "4":
                 this.sb.append("Ed.TuneString(25, \"d4e4f4e4d4c4n2d4e4f4e4d1z\")");
                 break;
