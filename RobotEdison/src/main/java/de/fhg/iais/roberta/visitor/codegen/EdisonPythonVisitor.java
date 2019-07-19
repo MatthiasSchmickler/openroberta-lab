@@ -326,29 +326,28 @@ public class EdisonPythonVisitor extends AbstractPythonVisitor implements IEdiso
 
     /**
      * visit a {@link InfraredSensor}.
-     *
+     * //TODO-MAX Ed.ObstacleDetectionBeam(Ed.ON) kommt immer, auch beim Start-Block
      * @param infraredSensor to be visited
      */
     @Override public Void visitInfraredSensor(InfraredSensor<Void> infraredSensor) {
-        if (this.currentBlock != IRComponent.OBSTACLE) {
+        if ( this.currentBlock == IRComponent.IRSENDER || this.currentBlock == IRComponent.IRSEEKER ) {
             this.sb.append("Ed.ObstacleDetectionBeam(Ed.ON)");
             this.currentBlock = IRComponent.OBSTACLE;
             nlIndent();
         }
 
-        this.sb.append("Ed.ReadObstacleDetection() == Ed.OBSTACLE_");
+        this.sb.append("Ed.ReadObstacleDetection() == Ed.");
 
         switch (infraredSensor.getMode()) {
             case "OBSTACLE_AHEAD":
-                this.sb.append("AHEAD");
+                this.sb.append("OBSTACLE_AHEAD");
                 break;
             case "OBSTACLE_LEFT":
-                this.sb.append("LEFT");
+                this.sb.append("OBSTACLE_LEFT");
                 break;
             case "OBSTACLE_RIGHT":
-                this.sb.append("RIGHT");
+                this.sb.append("OBSTACLE_RIGHT");
                 break;
-
         }
         return null;
     }

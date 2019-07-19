@@ -14,18 +14,18 @@ public class EdisonConfiguration extends Configuration {
 
     static {
 
-        ConfigurationComponent leftMotor = new ConfigurationComponent("leftmotor", true, "LMOTOR", "Left Motor", Collections.emptyMap());
-        ConfigurationComponent rightMotor = new ConfigurationComponent("rightmotor", true, "RMOTOR", "Right Motor", Collections.emptyMap());
-        ConfigurationComponent leftLED = new ConfigurationComponent("leftled", true, "LLED", "Left LED", Collections.emptyMap());
-        ConfigurationComponent rightLED = new ConfigurationComponent("rightled", true, "RLED", "Right LED", Collections.emptyMap());
-        ConfigurationComponent irLED = new ConfigurationComponent("infraredled", false, "IRLED", "IR LED", Collections.emptyMap());
-        ConfigurationComponent obstacleDetector = new ConfigurationComponent("OBSTACLEDETECTOR", false, "OBSTACLEDETECTOR", "OBSTACLEDETECTOR", Collections.emptyMap());
-        ConfigurationComponent lineTracker = new ConfigurationComponent("linetracker", false, "LINETRACKER", "Line Tracker", Collections.emptyMap());
-        ConfigurationComponent leftLight = new ConfigurationComponent("LLIGHT", false, "LLIGHT", "LLIGHT", Collections.emptyMap());
-        ConfigurationComponent rightLight = new ConfigurationComponent("rightlight", false, "RLIGHT", "Right Light Sensor", Collections.emptyMap());
-        ConfigurationComponent sound = new ConfigurationComponent("sound", true, "SOUND", "Sound Sensor", Collections.emptyMap());
-        ConfigurationComponent playButton = new ConfigurationComponent("play", true, "PLAY", "Play Button", Collections.emptyMap());
-        ConfigurationComponent recordButton = new ConfigurationComponent("record", true, "REC", "Record Button", Collections.emptyMap());
+        ConfigurationComponent leftMotor = new ConfigurationComponent("MOTOR", true, "LMOTOR", "LMOTOR", Collections.emptyMap());
+        ConfigurationComponent rightMotor = new ConfigurationComponent("MOTOR", true, "RMOTOR", "RMOTOR", Collections.emptyMap());
+        ConfigurationComponent leftLED = new ConfigurationComponent("LED", true, "LLED", "LLED", Collections.emptyMap());
+        ConfigurationComponent rightLED = new ConfigurationComponent("LED", true, "RLED", "RLED", Collections.emptyMap());
+        ConfigurationComponent irLED = new ConfigurationComponent("INFRARED", false, "IRLED", "IRLED", Collections.emptyMap());
+        ConfigurationComponent obstacleDetector = new ConfigurationComponent("INFRARED", false, "OBSTACLEDETECTOR", "OBSTACLEDETECTOR", Collections.emptyMap());
+        ConfigurationComponent lineTracker = new ConfigurationComponent("LIGHT", false, "LINETRACKER", "LINETRACKER", Collections.emptyMap());
+        ConfigurationComponent leftLight = new ConfigurationComponent("LIGHT", false, "LLIGHT", "LLIGHT", Collections.emptyMap());
+        ConfigurationComponent rightLight = new ConfigurationComponent("LIGHT", false, "RLIGHT", "RLIGHT", Collections.emptyMap());
+        ConfigurationComponent sound = new ConfigurationComponent("SOUND", true, "SOUND", "SOUND", Collections.emptyMap());
+        ConfigurationComponent playButton = new ConfigurationComponent("KEY", true, "PLAY", "PLAYKEY", Collections.emptyMap());
+        ConfigurationComponent recordButton = new ConfigurationComponent("KEY", true, "REC", "RECKEY", Collections.emptyMap());
 
         ArrayList<ConfigurationComponent> components = Lists.newArrayList(
             leftMotor,

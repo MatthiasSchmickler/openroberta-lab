@@ -1,6 +1,7 @@
 package de.fhg.iais.roberta.codegen;
 
 import de.fhg.iais.roberta.components.Configuration;
+import de.fhg.iais.roberta.components.EdisonConfiguration;
 import de.fhg.iais.roberta.factory.IRobotFactory;
 import de.fhg.iais.roberta.inter.mode.action.ILanguage;
 import de.fhg.iais.roberta.transformer.BlocklyProgramAndConfigTransformer;
@@ -92,7 +93,7 @@ public class EdisonCompilerWorkflow extends AbstractCompilerWorkflow {
      * @throws Exception if the Builder fails for whatever reason
      */
     @Override public Configuration generateConfiguration(IRobotFactory factory, String blocklyXml) throws Exception {
-        return new Configuration.Builder().build();
+        return new EdisonConfiguration.Builder().build();
     }
 
     /**
