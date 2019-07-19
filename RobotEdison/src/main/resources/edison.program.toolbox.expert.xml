@@ -206,8 +206,6 @@
     <block type="math_integer"></block>
     <block type="math_arithmetic"></block>
     <block type="math_single"></block>
-    <block type="math_trig"></block>
-    <block type="math_constant"></block>
     <block type="math_number_property"></block>
     <block type="robMath_change">
       <value name="DELTA">

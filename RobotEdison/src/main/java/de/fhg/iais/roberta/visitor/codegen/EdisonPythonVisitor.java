@@ -67,7 +67,6 @@ public class EdisonPythonVisitor extends AbstractPythonVisitor implements IEdiso
         IRSEEKER, //...and receiver
         NONE //No method (standard from start)
     }
-    //TODO-MAX IR seeker, IR RC, Obstacle detection share IR LEDs
     private Sensor infraredBlocker = Sensor.NONE; //saves which Sensor uses the IR LEDs
 
 
@@ -377,8 +376,8 @@ public class EdisonPythonVisitor extends AbstractPythonVisitor implements IEdiso
         return null;
     }
 
-    //TODO-MAX JavaDocs
     /**
+     * Function to get the light level from a phototransistor/light sensor
      * visit a {@link LightSensor}.
      *
      * @param lightSensor
@@ -400,6 +399,7 @@ public class EdisonPythonVisitor extends AbstractPythonVisitor implements IEdiso
     }
 
     /**
+     * Function to detect claps from the sound sensor
      * visit a {@link SoundSensor}.
      *
      * @param soundSensor
@@ -410,6 +410,7 @@ public class EdisonPythonVisitor extends AbstractPythonVisitor implements IEdiso
     }
 
     /**
+     * Function to receive codes from an IR remote or another Edison robot
      * visit a {@link BluetoothRecieveAction}.
      *
      * @param bluetoothReceiveAction
@@ -426,6 +427,7 @@ public class EdisonPythonVisitor extends AbstractPythonVisitor implements IEdiso
     }
 
     /**
+     * Function to send IR codes to another Edison robot
      * visit a {@link BluetoothSendAction}.
      *
      * @param bluetoothSendAction to be visited
@@ -754,8 +756,8 @@ public class EdisonPythonVisitor extends AbstractPythonVisitor implements IEdiso
     }
 
     /**
-     * Function to find out the length of list or if it is empty
-     * //TODO-MAX NOP is empty not supported
+     * Function to find out the length of a list
+     * //NOP is empty not supported
      * visit a {@link LengthOfIsEmptyFunct}.
      *
      * @param lengthOfIsEmptyFunct to be visited
@@ -826,9 +828,8 @@ public class EdisonPythonVisitor extends AbstractPythonVisitor implements IEdiso
      * @param mathConst to be visited
      */
     @Override public Void visitMathConst(MathConst<Void> mathConst) {
-        //TODO-MAX delete this from Blockly
-        //EdPy does not support importing the math module so every math constant has to be rounded.
-        //EdPy does not support floats
+        //EdPy does not support importing the math module so every math constant has to be estimated.
+        //EdPy does not support floats so every math constant has to be rounded
         switch ( mathConst.getMathConst() ) {
             case PI:
                 this.sb.append("3");

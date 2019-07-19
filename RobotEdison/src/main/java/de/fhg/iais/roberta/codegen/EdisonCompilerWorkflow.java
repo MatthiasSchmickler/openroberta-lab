@@ -123,8 +123,8 @@ public class EdisonCompilerWorkflow extends AbstractCompilerWorkflow {
         //build and start the Python process
         ProcessBuilder
             processBuilder =
-            new ProcessBuilder("/usr/bin/python2", compilerDir + "EdPy.py", compilerDir + "en_lang.json", sourceFilePath + pyFile + ".py",
-                "-t", targetFilePath + pyFile + ".wav"); //TODO-MAX /usr/bin/python2 geht nur bei Unix
+            new ProcessBuilder("python2", compilerDir + "EdPy.py", compilerDir + "en_lang.json", sourceFilePath + pyFile + ".py",
+                "-t", targetFilePath + pyFile + ".wav");
 
         try {
             processBuilder.redirectOutput(ProcessBuilder.Redirect.INHERIT);
