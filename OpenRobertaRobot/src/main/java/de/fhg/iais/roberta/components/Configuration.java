@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 import de.fhg.iais.roberta.syntax.SC;
 import de.fhg.iais.roberta.util.dbc.Assert;
 import de.fhg.iais.roberta.util.dbc.DbcException;
+import de.fhg.iais.roberta.visitor.validate.IValidatorVisitor;
 
 /**
  * This class represents model of the hardware configuration of a robot (assume we have "left" and "right" motor). It is used in the code generation. <br>
@@ -143,6 +144,10 @@ public class Configuration {
      */
     public String generateText(String name) {
         return "";
+    }
+
+    public void accept(IValidatorVisitor<Void> v) {
+        v.visit(this);
     }
 
     /**

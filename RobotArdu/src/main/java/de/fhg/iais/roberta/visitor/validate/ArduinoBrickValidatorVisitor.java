@@ -1,5 +1,8 @@
 package de.fhg.iais.roberta.visitor.validate;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import de.fhg.iais.roberta.components.Configuration;
 import de.fhg.iais.roberta.components.ConfigurationComponent;
 import de.fhg.iais.roberta.syntax.SC;
@@ -27,10 +30,12 @@ import de.fhg.iais.roberta.syntax.sensor.generic.RfidSensor;
 import de.fhg.iais.roberta.syntax.sensor.generic.TemperatureSensor;
 import de.fhg.iais.roberta.syntax.sensor.generic.VoltageSensor;
 import de.fhg.iais.roberta.typecheck.NepoInfo;
+import de.fhg.iais.roberta.util.Key;
 import de.fhg.iais.roberta.visitor.hardware.IArduinoVisitor;
 import de.fhg.iais.roberta.visitor.hardware.sensor.ISensorVisitor;
 
-public final class ArduinoBrickValidatorVisitor extends AbstractBrickValidatorVisitor implements ISensorVisitor<Void>, IArduinoVisitor<Void> {
+public final class ArduinoBrickValidatorVisitor extends AbstractBrickValidatorVisitor
+    implements ISensorVisitor<Void>, IArduinoVisitor<Void>, IValidatorVisitor<Void> {
 
     public ArduinoBrickValidatorVisitor(Configuration brickConfiguration) {
         super(brickConfiguration);
@@ -240,6 +245,28 @@ public final class ArduinoBrickValidatorVisitor extends AbstractBrickValidatorVi
 
     @Override
     public Void visitSerialWriteAction(SerialWriteAction<Void> serialWriteAction) {
+        return null;
+    }
+
+    @Override
+    public void visit(Configuration configuration) {
+        /*
+         * run all needed checks here
+         */
+    }
+
+    @Override
+    public Map<String, String> getResult() {
+        Map<String, String> result = new HashMap<>();
+        result.put("ERROR_COUNT", Integer.toString(this.errorCount));
+        return null;
+    }
+
+    @Override
+    public Key getResultKey() {
+        if ( this.errorCount != 0 ) {
+            return Key.COMPILERWORKFLOW_ERROR_PROGRAM_GENERATION_FAILED_WITH_PARAMETERS;
+        }
         return null;
     }
 }

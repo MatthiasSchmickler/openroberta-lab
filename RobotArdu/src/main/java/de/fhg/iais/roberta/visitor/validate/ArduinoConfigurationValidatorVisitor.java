@@ -4,26 +4,24 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import de.fhg.iais.roberta.components.Configuration;
+import de.fhg.iais.roberta.util.Key;
 import de.fhg.iais.roberta.util.dbc.DbcException;
 
 public class ArduinoConfigurationValidatorVisitor extends AbstractConfigurationValidatorVisitor {
 
-    private final List<String> freePins =
-        Stream.of("0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "A0", "A1", "A2", "A3", "A4", "A5").collect(Collectors.toList());
-
+    private final List<String> freePins;
     private String incorrectPin;
     private String failingBlock;
+    private Key resultKey;
 
     private boolean checkSuccess = false;
 
     int errorCount;
 
-    public ArduinoConfigurationValidatorVisitor(Configuration configuration) {
-        super(configuration);
+    public ArduinoConfigurationValidatorVisitor(List<String> pins) {
+        this.freePins = pins;
     }
 
     public void checkConfigurationBlock(Map<String, String> componentProperties, /*Map<String, List<String>> inputToPinsMapping,*/ String blockType) {
@@ -39,6 +37,7 @@ public class ArduinoConfigurationValidatorVisitor extends AbstractConfigurationV
                         this.errorCount++;
                         this.incorrectPin = v;
                         this.failingBlock = blockType;
+                        this.resultKey = Key.COMPILERWORKFLOW_ERROR_PROGRAM_GENERATION_FAILED_WITH_PARAMETERS;
                         throw new DbcException("Pin " + v + " is not allowed for " + k + " input/output");
                     } else {
                         blockPins.add(v);
@@ -55,38 +54,29 @@ public class ArduinoConfigurationValidatorVisitor extends AbstractConfigurationV
             //block.addInfo(NepoInfo.error("CONFIGURATION_ERROR_ACTOR_MISSING"));
             this.errorCount++;
             this.incorrectPin = "NON_UNIQUE";
+            this.resultKey = Key.COMPILERWORKFLOW_ERROR_PROGRAM_GENERATION_FAILED_WITH_PARAMETERS;
             throw new DbcException("Pins must be unique");
         }
         this.checkSuccess = true;
     }
 
     @Override
-    public String getFailingBlock() {
-        return this.failingBlock;
-    }
-
-    @Override
-    public String getIncorrectPin() {
-        return this.incorrectPin;
-    }
-
-    @Override
-    public void checkConfiguration() {
-        this.robotConfiguration.getConfigurationComponentsValues().forEach(v -> {
+    public void visit(Configuration configuration) {
+        configuration.getConfigurationComponentsValues().forEach(v -> {
             checkConfigurationBlock(v.getComponentProperties(), /*inputToPinsMapping,*/ v.getComponentType());
         });
     }
 
     @Override
-    public void validate() {
-        checkConfiguration();
+    public Map<String, String> getResult() {
+        Map<String, String> result = new HashMap<>();
+        result.put("BLOCK", this.failingBlock);
+        result.put("PIN", this.incorrectPin);
+        return result;
     }
 
     @Override
-    public Map<String, String> getResult() {
-        Map<String, String> result = new HashMap<>();
-        result.put("BLOCK", getFailingBlock());
-        result.put("PIN", getIncorrectPin());
-        return result;
+    public Key getResultKey() {
+        return this.resultKey;
     }
 }

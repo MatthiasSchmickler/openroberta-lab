@@ -15,8 +15,10 @@ import de.fhg.iais.roberta.transformer.BlocklyProgramAndConfigTransformer;
 import de.fhg.iais.roberta.transformers.arduino.Jaxb2ArduinoConfigurationTransformer;
 import de.fhg.iais.roberta.util.Key;
 import de.fhg.iais.roberta.util.PluginProperties;
+import de.fhg.iais.roberta.util.dbc.DbcException;
 import de.fhg.iais.roberta.util.jaxb.JaxbHelper;
 import de.fhg.iais.roberta.visitor.codegen.SenseboxCppVisitor;
+import de.fhg.iais.roberta.visitor.validate.IValidatorVisitor;
 
 public class SenseboxCompilerWorkflow extends AbstractCompilerWorkflow {
 
@@ -35,7 +37,7 @@ public class SenseboxCompilerWorkflow extends AbstractCompilerWorkflow {
             return;
         }
         try {
-            Configuration configuration = (data.getRobotConfiguration());
+            Configuration configuration = data.getRobotConfiguration();
             this.generatedSourceCode = SenseboxCppVisitor.generate(configuration, data.getProgramTransformer().getTree(), true);
             LOG.info("senseBox c++ code generated");
         } catch ( Exception e ) {
@@ -48,17 +50,28 @@ public class SenseboxCompilerWorkflow extends AbstractCompilerWorkflow {
     public void generateSourceCode(
         String token,
         String programName,
-        BlocklyProgramAndConfigTransformer data,
+        BlocklyProgramAndConfigTransformer transformer,
         String SSID,
         String password,
         ILanguage language) {
-        if ( data.getErrorMessage() != null ) {
+        loadValidatorVisitors(transformer.getRobotConfiguration());
+        if ( this.validators != null ) {
+            for ( IValidatorVisitor<Void> validator : this.validators ) {
+                try {
+                    transformer.getRobotConfiguration().accept(validator);
+                } catch ( DbcException e ) {
+                    this.workflowResult = validator.getResultKey();
+                    return;
+                }
+            }
+        }
+        if ( transformer.getErrorMessage() != null ) {
             this.workflowResult = Key.COMPILERWORKFLOW_ERROR_PROGRAM_TRANSFORM_FAILED;
             return;
         }
         try {
-            Configuration configuration = (data.getRobotConfiguration());
-            this.generatedSourceCode = SenseboxCppVisitor.generate(configuration, data.getProgramTransformer().getTree(), SSID, password, true);
+            Configuration configuration = transformer.getRobotConfiguration();
+            this.generatedSourceCode = SenseboxCppVisitor.generate(configuration, transformer.getProgramTransformer().getTree(), SSID, password, true);
             LOG.info("senseBox c++ code generated");
         } catch ( Exception e ) {
             LOG.error("senseBox c++ code generation failed", e);

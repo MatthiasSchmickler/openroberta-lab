@@ -1,9 +1,8 @@
 package de.fhg.iais.roberta.factory;
 
-import de.fhg.iais.roberta.components.Configuration;
 import de.fhg.iais.roberta.util.PluginProperties;
 import de.fhg.iais.roberta.visitor.validate.AbstractConfigurationValidatorVisitor;
-import de.fhg.iais.roberta.visitor.validate.ArduinoConfigurationValidatorVisitor;
+import de.fhg.iais.roberta.visitor.validate.UnoConfigurationValidatorVisitor;
 
 public class UnoFactory extends AbstractArduinoFactory {
 
@@ -12,7 +11,7 @@ public class UnoFactory extends AbstractArduinoFactory {
     }
 
     @Override
-    public AbstractConfigurationValidatorVisitor getRobotConfigurationCheckVisitor(Configuration configuration) {
-        return new ArduinoConfigurationValidatorVisitor(configuration);
+    public AbstractConfigurationValidatorVisitor getRobotConfigurationCheckVisitor() {
+        return new UnoConfigurationValidatorVisitor();
     }
 }

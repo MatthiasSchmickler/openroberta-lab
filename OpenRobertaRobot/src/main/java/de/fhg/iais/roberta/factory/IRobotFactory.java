@@ -71,7 +71,7 @@ public interface IRobotFactory {
 
     AbstractSimValidatorVisitor getSimProgramCheckVisitor(Configuration brickConfiguration);
 
-    default AbstractConfigurationValidatorVisitor getRobotConfigurationCheckVisitor(Configuration configuration) {
+    default AbstractConfigurationValidatorVisitor getRobotConfigurationCheckVisitor() {
         return null;
     }
 

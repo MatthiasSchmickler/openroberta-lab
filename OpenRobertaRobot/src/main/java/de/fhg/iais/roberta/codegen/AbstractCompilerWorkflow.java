@@ -5,24 +5,31 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.ProcessBuilder.Redirect;
+import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Base64;
+import java.util.List;
 import java.util.StringJoiner;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import de.fhg.iais.roberta.components.Configuration;
 import de.fhg.iais.roberta.inter.mode.action.ILanguage;
 import de.fhg.iais.roberta.transformer.BlocklyProgramAndConfigTransformer;
 import de.fhg.iais.roberta.util.Key;
 import de.fhg.iais.roberta.util.PluginProperties;
 import de.fhg.iais.roberta.util.dbc.Assert;
 import de.fhg.iais.roberta.util.dbc.DbcException;
+import de.fhg.iais.roberta.visitor.validate.IValidatorVisitor;
 
 public abstract class AbstractCompilerWorkflow implements ICompilerWorkflow {
     private static final Logger LOG = LoggerFactory.getLogger(AbstractCompilerWorkflow.class);
@@ -32,9 +39,48 @@ public abstract class AbstractCompilerWorkflow implements ICompilerWorkflow {
     protected Key workflowResult = Key.COMPILERWORKFLOW_SUCCESS;
     protected String crosscompilerResponse = "";
     protected String generatedSourceCode = null;
+    protected List<IValidatorVisitor<Void>> validators;
 
     public AbstractCompilerWorkflow(PluginProperties pluginProperties) {
         this.pluginProperties = pluginProperties;
+    }
+
+    @Override
+    public void loadValidatorVisitors(Configuration configuration) {
+        LOG.debug("Loading validators...");
+        String validatorsPropertyEntry = this.pluginProperties.getStringProperty("robot.plugin.validators");
+        if ( validatorsPropertyEntry == null || validatorsPropertyEntry.equals("") ) {
+            // throw new DbcException("Program/Configuration validators not configured");
+            LOG.debug("No validators present.");
+            this.validators = null;
+            return;
+        }
+        List<String> validatorNames = Stream.of(this.pluginProperties.getStringProperty("robot.plugin.validators").split(",")).collect(Collectors.toList());
+        List<IValidatorVisitor<Void>> validators = new ArrayList<>();
+        validatorNames.forEach(validatorName -> {
+            LOG.debug("Loading validator " + validatorName);
+            try {
+                validators.add((IValidatorVisitor<Void>) Class.forName(validatorName).newInstance());
+            } catch ( InstantiationException | IllegalAccessException | ClassNotFoundException | IllegalArgumentException | SecurityException e ) {
+                e.printStackTrace();
+                throw new DbcException(
+                    "Provided validator is not a validator, please validate that your provided validator is a validator that can perform validation.");
+            }
+        });
+        boolean methodFound = false;
+        for ( IValidatorVisitor<Void> validator : validators ) {
+            Method[] methods = validator.getClass().getDeclaredMethods();
+            for ( Method method : methods ) {
+                if ( method.getName().equals("visit") ) {
+                    LOG.debug("Visit method found for " + validator.getClass().getName());
+                    methodFound = true;
+                }
+            }
+            if ( !methodFound ) {
+                throw new DbcException("Visit method not found for validator " + validator.getClass().getName());
+            }
+        }
+        this.validators = validators;
     }
 
     @Override
@@ -82,19 +128,19 @@ public abstract class AbstractCompilerWorkflow implements ICompilerWorkflow {
             final BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream()));
             StringJoiner sj = new StringJoiner(System.getProperty("line.separator"));
             reader.lines().iterator().forEachRemaining(sj::add);
-            crosscompilerResponse = sj.toString();
+            this.crosscompilerResponse = sj.toString();
             ecode = p.waitFor();
             p.destroy();
         } catch ( Exception e ) {
-            crosscompilerResponse = "exception when calling the cross compiler";
-            LOG.error(crosscompilerResponse, e);
+            this.crosscompilerResponse = "exception when calling the cross compiler";
+            LOG.error(this.crosscompilerResponse, e);
             ecode = -1;
         }
-        LOG.error("DEBUG INFO: " + crosscompilerResponse);
+        LOG.error("DEBUG INFO: " + this.crosscompilerResponse);
         if ( ecode == 0 ) {
             return true;
         } else {
-            LOG.error("compilation of program failed with message: \n" + crosscompilerResponse);
+            LOG.error("compilation of program failed with message: \n" + this.crosscompilerResponse);
             return false;
         }
     }
@@ -115,10 +161,10 @@ public abstract class AbstractCompilerWorkflow implements ICompilerWorkflow {
             String compiledHex = IOUtils.toString(p.getInputStream(), "US-ASCII");
             p.waitFor();
             p.destroy();
-            crosscompilerResponse = "cross compilation successful";
+            this.crosscompilerResponse = "cross compilation successful";
             return compiledHex;
         } catch ( Exception e ) {
-            crosscompilerResponse = "cross compiler could not be called: " + e.getMessage();
+            this.crosscompilerResponse = "cross compiler could not be called: " + e.getMessage();
             LOG.error("exception when calling the cross compiler", e);
             return null;
         }
