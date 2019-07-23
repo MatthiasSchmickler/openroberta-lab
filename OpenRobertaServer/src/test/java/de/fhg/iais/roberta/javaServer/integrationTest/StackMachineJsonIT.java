@@ -1,4 +1,4 @@
-package de.fhg.iais.roberta.testPrototypes;
+package de.fhg.iais.roberta.javaServer.integrationTest;
 
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -52,7 +52,7 @@ import de.fhg.iais.roberta.util.jaxb.JaxbHelper;
 import de.fhg.iais.roberta.util.testsetup.IntegrationTest;
 
 /**
- * <b>Testing the generation and execution of code.</b> At the moment exclusively for the WeDo robot. To be extended at least to the simulation.<br>
+ * <b>Testing the generation and execution of stack machine code.</b> At the moment exclusively for the WeDo robot. To be extended to the simulation.<br>
  * <br>
  * <i>Usage:</i><br>
  * Create a program in the lab. Put the expected result into the program documentation tab, e.g.<br>
@@ -64,7 +64,7 @@ import de.fhg.iais.roberta.util.testsetup.IntegrationTest;
  * show "1"<br><br>show "2"<br>
  * END-RESULT<br><br>
  * </code> The string after "show" refers to the string written by the "show text"/"zeige Text"-blockly-block in the program. Empty lines are ignored.<br>
- * Export the program into the directory "WedoInterpreter/WeDoCI".<br>
+ * Export the program into the directory "src/test/resources/crosscompilerTests/robotSpecific/wedo".<br>
  * <br>
  * If this class {@linkplain StackMachineJsonIT} is run as an Junit4 test, first all blockly-xml-files found in the directory mentioned above are compiled.
  * Dependent on the robot this generates Java, Python, C(++) or a byte code in the ORA-format "StackMachineJson". The generated code is compiled using the

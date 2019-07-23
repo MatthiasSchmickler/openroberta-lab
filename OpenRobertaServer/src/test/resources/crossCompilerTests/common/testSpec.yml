@@ -27,6 +27,8 @@ robots:
        template: calliope
     sensebox:
        template: sensebox
+    wedo:
+       template: wedo
 
 progs:
     stringConcat:
