@@ -78,6 +78,7 @@ import de.fhg.iais.roberta.util.testsetup.IntegrationTest;
  *
  * @author rbudde
  */
+@Ignore
 @Category(IntegrationTest.class)
 @RunWith(MockitoJUnitRunner.class)
 public class StackMachineJsonIT {
